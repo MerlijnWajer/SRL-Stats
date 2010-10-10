@@ -30,7 +30,7 @@ class User(Base):
         self.password = password
 
     def __repr__(self):
-        return '<User(%s)>' % self.name
+        return 'User(%s)' % self.name
 
 class Script(Base):
     """
@@ -50,7 +50,7 @@ class Script(Base):
         self.name = name
 
     def __repr__(self):
-        return '<Script(%s : %s)>' % (self.name, self.owner)
+        return 'Script(%s : %s)' % (self.name, self.owner)
 
 class Commit(Base):
     """
@@ -76,7 +76,7 @@ class Commit(Base):
         self.timeadd = timeadd
 
     def __repr__(self):
-        return '<Commit(%s, %s, %s)>' % (self.script,self.user,self.timeadd)
+        return 'Commit(%s, %s, %s)' % (self.script,self.user,self.timeadd)
 
 
 class Variable(Base):
