@@ -7,6 +7,11 @@ from sqlalchemy.orm import relationship, backref
 Base = declarative_base()
 metadata = Base.metadata
 
+script_variables = Table('script_variables', metadata,
+        Column('script_id', Integer, ForeignKey('scripts.id')),
+        Column('variable_id', Integer, ForeignKey('variables.id'))
+    )
+
 class User(Base):
     """
         The User object represents a user.
@@ -44,6 +49,8 @@ class Script(Base):
     name = Column(String(40), unique=True)
 
     owner = relationship(User, backref=backref('scripts', order_by=id))
+    variables = relationship('Variable', secondary=script_variables,
+        backref='scripts')
     # commits = commits to script
 
     def __init__(self, name):
@@ -98,6 +105,9 @@ class Variable(Base):
         self.name = name
         self.is_var = is_var
 
+    def __repr__(self):
+        return 'Variable(%s)' % (self.name)
+
 class CommitVar(Base):
     """
         The CommitVar object represents a commit variable (value).
@@ -118,3 +128,6 @@ class CommitVar(Base):
         self.amount = amount
         pass
 
+    def __repr__(self):
+        return 'CommitVar(%s, %s, %s)' % (self.amount, self.commit,
+                self.variable)
