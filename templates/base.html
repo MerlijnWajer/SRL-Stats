@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+<meta name="description" content="description"/>
+<meta name="keywords" content="keywords"/> 
+<meta name="author" content="author"/> 
+<link rel="stylesheet" type="text/css" href="/merlijn/static/stats/default.css" media="screen"/>
+<title>{% block title %} SRL Stats {% endblock %}</title>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <div class="title">
+            <h1>SRL Stats</h1>
+        </div>
+        <div class="navigation">
+            <a href="/link"> Hai </a>
+            <div class="clearer"><span></span></div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="content">
+            {% block content %}
+            Wat.
+            {% endblock %}
+        </div>
+        <div class="sidenav">
+            {% block sidenav %}
+
+           <!--  <h1>Search Scripts</h1> -->
+
+            <h1>Top Users</h1>
+            <ul>
+                {% for user in users: %}
+                <li> {{ user }} </li>
+                {% endfor %}
+            </ul>
+
+            {% endblock sidenav %}
+
+        </div>
+
+        <div class="clearer">&nbsp;</div>
+    </div>
+
+</div>
+<div class="footer">
+    {% block footer %}
+    <div>
+        &copy; Merlijn Wajer
+    </div>
+    <!--
+    <div>
+    % ttime = time() - stime
+    Time taken: {{ttime}} s
+    </div> -->
+    {% endblock %}
+</div>
+</body>
+
+</html>
