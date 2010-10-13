@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% block title %}
-    Child
+    User Page for {{user.name}}
 {% endblock %}
 
 {% block content %}
-    User information!
+    Total Time Committed: {{ ttc }}
+    Total Commits: {{ tc }}
+    Scripts: {{ user.scripts }}
 {% endblock %}
