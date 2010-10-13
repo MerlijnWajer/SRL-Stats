@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}
+    User Page for {{ user.name }}
+{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ user.name }}
+    </h1>
+    <p> Total Time Committed: {{ ttc }} </p>
+    <p> Total Commits: {{ tc }} </p>
+    {% if user.scripts %}
+        <p> Scripts: <p/>
+        <ul>
+        {% for script in user.scripts %}
+        <li> {{ script.name }} </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

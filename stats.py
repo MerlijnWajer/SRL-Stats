@@ -47,7 +47,7 @@ def general():
 
 
 def user(userid=None):
-    tmpl = jinjaenv.get_template('users.html')
+    tmpl = jinjaenv.get_template('user.html')
     uinfo = ut.info(userid)
     return str(tmpl.render(
         {'users' : ut.top(10), 'ttc' : uinfo['time'][1],
