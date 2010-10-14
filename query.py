@@ -8,9 +8,9 @@ class UserTool(object):
         self.s = sess
 
     def top(self, limit):
-        return self.s.query(func.sum(Commit.timeadd), User.name).join(
+        return self.s.query(func.sum(Commit.timeadd), User.name, User.id).join(
             (User, Commit.user_id == User.id)).group_by(
-             User.name).order_by(desc('sum_1')).limit(limit)
+             User.name, User.id).order_by(desc('sum_1')).limit(limit)
     
     def info(self, uid):
         user = self.s.query(User).filter(User.id==uid).first()
@@ -33,9 +33,10 @@ class ScriptTool(object):
         self.s = sess
 
     def top(self, limit):
-        return self.s.query(func.sum(Commit.timeadd), Script.name).join(
+        return self.s.query(func.sum(Commit.timeadd), Script.name, Script.id \
+                ).join(
             (Script, Commit.script_id == Script.id)).group_by(
-             Script.name).order_by(desc('sum_1')).limit(limit)
+             Script.name, Script.id).order_by(desc('sum_1')).limit(limit)
     
     def info(self, sid):
         script = self.s.query(Script).filter(Script.id==sid).first()

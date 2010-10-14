@@ -11,6 +11,10 @@
 # /var for var pages ex: /var/42
 # /commit/:commitid specific commit info
 
+# HAX.
+import os
+os.environ['MPLCONFIGDIR'] = '/tmp'
+
 from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
 from sql import *
@@ -18,6 +22,7 @@ from webtool import WebTool
 
 # Import UserTool
 from query import UserTool, ScriptTool
+from graph import GraphTool
 
 BASE_URL = '/stats'
 
@@ -38,6 +43,9 @@ def stats(env, start_response):
     if r is None:
         start_response('404 Not Found', [('Content-Type', 'text/plain')])
         r = '404: %s' % env['REQUEST_URI']
+    elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
+        start_response('200 OK', [('Content-Type', 'image/png')])
+        r = r[1]
     else:
         start_response('200 OK', [('Content-Type', 'text/html;charset=utf8')])
 
@@ -87,11 +95,29 @@ def script_commit(scriptid=None):
             'script' : script, 'commits' : st.list(script)}
         ))
 
+def script_graph(scriptid=None):
+    sinfo = st.info(scriptid)
+
+    vars = sinfo['vars']
+    script = sinfo['script']
+
+    fracs = []
+    labels = []
+
+    for x in vars:
+        fracs.append(x[0])
+        labels.append(x[1])
+
+    s = gt.pie(fracs,labels,'Variables for %s' % script.name)
+    return ['graph', s]
+
+
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     wt = WebTool()
     ut = UserTool(session)
     st = ScriptTool(session)
+    gt = GraphTool()
 
     import re
 
@@ -110,6 +136,9 @@ if __name__ == '__main__':
 
     wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/commits/?$' % BASE_URL),
             script_commit, ['scriptid'])
+
+    wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/graph/?$' % BASE_URL),
+            script_graph, ['scriptid'])
 
     wt.add_rule(re.compile('^%s/?$' % BASE_URL),
                 general, [])

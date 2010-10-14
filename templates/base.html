@@ -40,7 +40,11 @@
             <h1>Top Users</h1>
             <ul>
                 {% for user in users: %}
-                <li> {{ user[1] }} ({{ user[0] }}) </li>
+                <li>
+                <a href="/stats/user/{{ user[2] }}">
+                    {{ user[1] }} ({{ user[0] }})
+                </a>
+                </li>
                 {% endfor %}
             </ul>
             {% endif %}
@@ -49,7 +53,11 @@
             <h1>Top Scripts</h1>
             <ul>
                 {% for script in scripts: %}
-                <li> {{ script[1] }} ({{ script[0] }}) </li>
+                <li>
+                <a href="/stats/script/{{ script[2] }}">
+                    {{ script[1] }} ({{ script[0] }})
+                </a>
+                </li>
                 {% endfor %}
             </ul>
             {% endif %}
