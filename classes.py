@@ -118,7 +118,8 @@ class CommitVar(Base):
 
     id = None # Works?
     commit_id = Column(Integer, ForeignKey('commits.id'),primary_key=True)
-    random_id = Column(Integer, ForeignKey('variables.id'),primary_key=True)
+    
+    variable_id = Column(Integer, ForeignKey('variables.id'),primary_key=True)
     amount = Column(Integer, nullable=False)
 
     commit = relationship(Commit, backref=backref('commitvars', order_by=id))

@@ -36,12 +36,23 @@
 
            <!--  <h1>Search Scripts</h1> -->
 
+            {% if users %}
             <h1>Top Users</h1>
             <ul>
                 {% for user in users: %}
-                <li> {{ user }} </li>
+                <li> {{ user[1] }} ({{ user[0] }}) </li>
                 {% endfor %}
             </ul>
+            {% endif %}
+
+            {% if scripts %}
+            <h1>Top Scripts</h1>
+            <ul>
+                {% for script in scripts: %}
+                <li> {{ script[1] }} ({{ script[0] }}) </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
 
             {% endblock sidenav %}
 
@@ -56,6 +67,9 @@
     <div>
         &copy; Merlijn Wajer
     </div>
+    <a href="http://www.vim.org/">
+        <img src="http://www.vim.org/images/vim_created.gif"</img>
+    </a>
     <!--
     <div>
     % ttime = time() - stime

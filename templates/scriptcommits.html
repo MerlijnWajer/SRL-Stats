@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}
+    Script Commits: {{ script.name }}
+{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ script.name }}
+    </h1>
+    {% if commits %}
+        <table>
+            <tr>
+                <th> Commit ID </th>
+                <th> Time Committed </th>
+                <th> Committed by </th>
+            </tr>
+        {% for commit in commits %}
+            <tr>
+                <td> {{ commit.id }} </td>
+                <td> {{ commit.timeadd }} </td>
+                <td> {{ commit.user.name }} </td>
+            </tr>
+        {% endfor %}
+        </table>
+        </ul>
+    {% endif %}
+{% endblock %}

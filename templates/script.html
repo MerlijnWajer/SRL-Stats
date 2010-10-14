@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block title %}
-    User Page: {{ user.name }}
+    Script Page: {{ script.name }}
 {% endblock %}
 
 {% block content %}
     <h1>
-        {{ user.name }}
+        {{ script.name }}
     </h1>
     <p> Total Time Committed: {{ ttc }} </p>
     <p> Total Commits: {{ tc }} </p>
-    {% if user.scripts %}
-        <p> Scripts: <p/>
+    {% if vars %}
+        <p> Vars: <p/>
         <ul>
-        {% for script in user.scripts %}
-        <li> {{ script.name }} </li>
+        {% for var in vars %}
+        <li> {{ var[1] }} : {{ var[0] }}  </li>
         {% endfor %}
         </ul>
     {% endif %}
