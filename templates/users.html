@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}
+    Users: Page {{ pageid }}
+{% endblock %}
+
+{% block content %}
+    {% if users %}
+
+        <table>
+            <tr>
+                <th> User ID </th>
+                <th> User Name </th>
+                <th> Total Time </th>
+            </tr>
+        {% for user in users %}
+            <tr>
+                <td> {{ user[2] }} </td>
+                <td> {{ user[1] }} </td>
+                <td> {{ user[0] }} </td>
+            </tr>
+        {% endfor %}
+        </table>
+
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}
+    Users: Page {{ pageid }}
+{% endblock %}
+
+{% block content %}
+    {% if scripts %}
+
+        <table>
+            <tr>
+                <th> Script ID </th>
+                <th> Script Name </th>
+                <th> Total Time </th>
+            </tr>
+        {% for script in scripts %}
+            <tr>
+                <td> {{ script[2] }} </td>
+                <td> {{ script[1] }} </td>
+                <td> {{ script[0] }} </td>
+            </tr>
+        {% endfor %}
+        </table>
+
+    {% endif %}
+{% endblock %}

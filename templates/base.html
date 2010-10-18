@@ -19,10 +19,14 @@
         <div class="title">
             <h1>SRL Stats</h1>
         </div>
+        {% block topnav %}
         <div class="navigation">
-            <a href="/link"> Hai </a>
+            {% for nav, name in {'user/all' : 'Users'}.iteritems(): %}
+            <a href="/stats/{{ nav }}/"> {{ name }} </a>
+            {% endfor %}
             <div class="clearer"><span></span></div>
         </div>
+        {% endblock %}
     </div>
 
     <div class="main">
@@ -36,10 +40,10 @@
 
            <!--  <h1>Search Scripts</h1> -->
 
-            {% if users %}
+            {% if topusers %}
             <h1>Top Users</h1>
             <ul>
-                {% for user in users: %}
+                {% for user in topusers: %}
                 <li>
                 <a href="/stats/user/{{ user[2] }}">
                     {{ user[1] }} ({{ user[0] }})
@@ -49,10 +53,10 @@
             </ul>
             {% endif %}
 
-            {% if scripts %}
+            {% if topscripts %}
             <h1>Top Scripts</h1>
             <ul>
-                {% for script in scripts: %}
+                {% for script in topscripts: %}
                 <li>
                 <a href="/stats/script/{{ script[2] }}">
                     {{ script[1] }} ({{ script[0] }})

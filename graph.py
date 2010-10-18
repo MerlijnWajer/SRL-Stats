@@ -1,5 +1,8 @@
 from cStringIO import StringIO
 
+import matplotlib
+matplotlib.use('svg')
+
 import matplotlib.pyplot as plt
 from pylab import *
 import numpy as np

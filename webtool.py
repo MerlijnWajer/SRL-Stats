@@ -4,6 +4,11 @@
 # REQUEST_URI = /mai/linkoe
 # IP = REMOTE_ADDR
 
+class WebToolException(Exception):
+    """
+        Raised on an exception in the WebTool.
+    """
+
 class WebTool(object):
     """
         The WebTool class provides me with the required MiddleWare utilities.
@@ -16,6 +21,10 @@ class WebTool(object):
         pass
 
     def add_rule(self, rule, func, varnames):
+        """
+            Add a new rule. The rule has to be a regex object. (Use re.compile)
+            func is called with varnames amount of named arguments.
+        """
         if rule in self.rules:
             raise WebToolException('Rule %s already exists' % rule)
         self.rules[rule] = {'func': func, 'vars': varnames}
@@ -25,6 +34,9 @@ class WebTool(object):
             self.add_rule(rule, func, vnames)
     
     def apply_rule(self, url):
+        """
+            apply_rule finds an appropriate rule and applies it if found.
+        """
         for rule, fv in self.rules.iteritems():
             m = rule.match(url)
             if m:

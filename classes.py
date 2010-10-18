@@ -83,7 +83,8 @@ class Commit(Base):
         self.timeadd = timeadd
 
     def __repr__(self):
-        return 'Commit(%s, %s, %s)' % (self.script,self.user,self.timeadd)
+        return 'Commit(%d)' % self.id
+        #return 'Commit(%s, %s, %s)' % (self.script,self.user,self.timeadd)
 
 
 class Variable(Base):
