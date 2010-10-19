@@ -15,7 +15,11 @@
         {% for user in users %}
             <tr>
                 <td> {{ user[2] }} </td>
-                <td> {{ user[1] }} </td>
+                <td>
+                    <a href="/stats/user/{{ user[2] }}">
+                        {{ user[1] }}
+                    </a>
+                </td>
                 <td> {{ user[0] }} </td>
             </tr>
         {% endfor %}

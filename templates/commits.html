@@ -15,9 +15,21 @@
             </tr>
         {% for commit in commits %}
             <tr>
-                <td> {{ commit.id }} </td>
-                <td> {{ commit.script.name }} </td>
-                <td> {{ commit.user.name }} </td>
+                <td>
+                    <a href="/stats/commit/{{ commit.id }}">
+                        {{ commit.id }}
+                    </a>
+                </td>
+                <td>
+                    <a href="/stats/script/{{ commit.script.id }}">
+                        {{ commit.script.name }}
+                    </a>
+                </td>
+                <td>
+                    <a href="/stats/user/{{ commit.user.id }}">
+                        {{ commit.user.name }}
+                    </a>
+                </td>
                 <td> {{ commit.timeadd }} </td>
             </tr>
         {% endfor %}
