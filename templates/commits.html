@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}
+    Commits: Page {{ pageid }}
+{% endblock %}
+
+{% block content %}
+    {% if commits %}
+
+        <table>
+            <tr>
+                <th> Commit ID </th>
+                <th> Script Name </th>
+                <th> User Name </th>
+                <th> Time </th>
+            </tr>
+        {% for commit in commits %}
+            <tr>
+                <td> {{ commit.id }} </td>
+                <td> {{ commit.script.name }} </td>
+                <td> {{ commit.user.name }} </td>
+                <td> {{ commit.timeadd }} </td>
+            </tr>
+        {% endfor %}
+        </table>
+
+        <p>
+        {% if pageid > 1 %}
+        <a href="/stats/commit/all/{{ pageid - 1 }}">prev</a>
+        <a href="/stats/commit/all/{{ pageid + 1 }}">next</a>
+        {% else %}
+        <a href="/stats/commit/all/{{ pageid + 1 }}">next</a>
+        {% endif %}
+        </p>
+
+    {% else %}
+
+    <p> How now, brown cow? (No more commits) </p>
+
+    {% endif %}
+{% endblock %}

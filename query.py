@@ -22,7 +22,7 @@ class UserTool(object):
         return self.s.query(func.sum(Commit.timeadd), User.name, User.id).join(
             (User, Commit.user_id == User.id)).group_by(
              User.name, User.id).order_by(desc('sum_1')).offset(
-                     _offset).limit(_limit)
+                     _offset).limit(_limit).all()
     
     def info(self, uid):
         """
@@ -57,7 +57,7 @@ class ScriptTool(object):
                 ).join(
             (Script, Commit.script_id == Script.id)).group_by(
              Script.name, Script.id).order_by(desc('sum_1')).offset(
-                     _offset).limit(_limit)
+                     _offset).limit(_limit).all()
     
     def info(self, sid):
         script = self.s.query(Script).filter(Script.id==sid).first()
@@ -78,3 +78,17 @@ class ScriptTool(object):
                     script.id).order_by(desc(Commit.id)).offset(
                             _offset).limit(_limit).all()
         return commits
+
+class CommitTool(object):
+
+    def __init__(self, sess):
+        self.s = sess
+
+    def top(self, _offset=0, _limit=10):
+        return self.s.query(Commit).order_by(desc(Commit.id)).offset(
+            _offset).limit(_limit).all()
+
+    def info(self, cid):
+        return self.s.query(Commit).filter(Commit.id == cid).first()
+
+

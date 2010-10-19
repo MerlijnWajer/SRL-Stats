@@ -21,5 +21,18 @@
         {% endfor %}
         </table>
 
+        <p>
+        {% if pageid > 1 %}
+        <a href="/stats/user/all/{{ pageid - 1 }}">prev</a>
+        <a href="/stats/user/all/{{ pageid + 1 }}">next</a>
+        {% else %}
+        <a href="/stats/user/all/{{ pageid + 1 }}">next</a>
+        {% endif %}
+        </p>
+
+    {% else %}
+
+    <p> How now, brown cow? (No more users) </p>
+
     {% endif %}
 {% endblock %}

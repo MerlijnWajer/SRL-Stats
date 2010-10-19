@@ -21,7 +21,7 @@ from sql import *
 from webtool import WebTool
 
 # Import UserTool
-from query import UserTool, ScriptTool
+from query import UserTool, ScriptTool, CommitTool
 from graph import GraphTool
 
 BASE_URL = '/stats'
@@ -131,6 +131,15 @@ def script_graph(scriptid=None):
     s = gt.pie(fracs,labels,'Variables for %s' % script.name)
     return ['graph', s]
 
+def commit(commitid=None):
+    tmpl = jinjaenv.get_template('commit.html')
+    _commit = ct.info(commitid)
+
+    return str(tmpl.render(
+        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
+            'commit' : _commit}
+        ))
+
 def users(pageid=None):
     pageid = get_pageid(pageid)
 
@@ -153,12 +162,24 @@ def scripts(pageid=None):
             'pageid' : pageid   }
         ))
 
+def commits(pageid=None):
+    pageid = get_pageid(pageid)
+
+    tmpl = jinjaenv.get_template('commits.html')
+
+    return str(tmpl.render(
+        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
+            'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+            'pageid' : pageid   }
+        ))
+
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     wt = WebTool()
     ut = UserTool(session)
     st = ScriptTool(session)
+    ct = CommitTool(session)
     gt = GraphTool()
 
     import re
@@ -170,6 +191,8 @@ if __name__ == '__main__':
     # integers; but databases do not. If someone passes 999999999999999999
     # then we will get a database error. This ``fix'' works around it.
     # Until you get more than 999999 users.
+
+    # User rules
     wt.add_rule(re.compile('^%s/user/([0-9]{1,6})$' % BASE_URL),
             user, ['userid'])
 
@@ -187,6 +210,8 @@ if __name__ == '__main__':
     wt.add_rule(re.compile('^%s/user/all/([0-9]{1,6})?$' % BASE_URL),
             users, ['pageid'])
 
+    # Script rules
+
     wt.add_rule(re.compile('^%s/script/([0-9]{1,6})$' % BASE_URL),
             script, ['scriptid'])
 
@@ -199,13 +224,23 @@ if __name__ == '__main__':
     wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/graph$' % BASE_URL),
             script_graph, ['scriptid'])
 
-    # Two rules (see above)
     wt.add_rule(re.compile('^%s/script/all/?$' % BASE_URL),
             scripts, [])
 
     wt.add_rule(re.compile('^%s/script/all/([0-9]{1,6})?$' % BASE_URL),
             scripts, ['pageid'])
 
+    # Commit rules
+    wt.add_rule(re.compile('^%s/commit/([0-9]{1,6})$' % BASE_URL),
+            commit, ['commitid'])
+
+    wt.add_rule(re.compile('^%s/commit/all/?$' % BASE_URL),
+            commits, [])
+
+    wt.add_rule(re.compile('^%s/commit/all/([0-9]{1,6})?$' % BASE_URL),
+            commits, ['pageid'])
+
+    # Default page
     wt.add_rule(re.compile('^%s/?$' % BASE_URL),
                 general, [])
 

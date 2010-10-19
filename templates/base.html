@@ -21,7 +21,11 @@
         </div>
         {% block topnav %}
         <div class="navigation">
-            {% for nav, name in {'user/all' : 'Users'}.iteritems(): %}
+            {% for nav, name in {
+                'user/all' : 'Users', 
+                'script/all' : 'Scripts', 
+                'commit/all' : 'Commits'
+            }.iteritems(): %}
             <a href="/stats/{{ nav }}/"> {{ name }} </a>
             {% endfor %}
             <div class="clearer"><span></span></div>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}
-    Users: Page {{ pageid }}
+    Scripts: Page {{ pageid }}
 {% endblock %}
 
 {% block content %}
@@ -20,6 +20,19 @@
             </tr>
         {% endfor %}
         </table>
+
+        <p>
+        {% if pageid > 1 %}
+        <a href="/stats/script/all/{{ pageid - 1 }}">prev</a>
+        <a href="/stats/script/all/{{ pageid + 1 }}">next</a>
+        {% else %}
+        <a href="/stats/script/all/{{ pageid + 1 }}">next</a>
+        {% endif %}
+        </p>
+
+    {% else %}
+
+    <p> How now, brown cow? (No more scripts) </p>
 
     {% endif %}
 {% endblock %}
