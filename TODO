@@ -1,3 +1,9 @@
+FIXME:
+    -   Find some way to always pass certain vars to templates. Constantly
+        passing the 'topusers' and 'topscripts' is annoying. Perhaps base.html
+        can retrieve it on its own?
+    -   Clean up UserTool and ScriptTool
+
 TODO:
     -   Charts using matplotlib.
     -   Script Manager integration?

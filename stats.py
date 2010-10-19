@@ -134,6 +134,9 @@ def script_graph(scriptid=None):
 def commit(commitid=None):
     tmpl = jinjaenv.get_template('commit.html')
     _commit = ct.info(commitid)
+    
+    if _commit is None:
+        return None
 
     return str(tmpl.render(
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
