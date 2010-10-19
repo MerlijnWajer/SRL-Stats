@@ -75,6 +75,9 @@ def user(userid=None):
     tmpl = jinjaenv.get_template('user.html')
     uinfo = ut.info(userid)
 
+    if uinfo['user'] is None:
+        return None
+
     return str(tmpl.render(
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'ttc' : uinfo['time'][1],
@@ -96,6 +99,9 @@ def user_commit(userid=None, pageid=None):
 def script(scriptid=None):
     tmpl = jinjaenv.get_template('script.html')
     sinfo = st.info(scriptid)
+
+    if sinfo['script'] is None:
+        return None
 
     return str(tmpl.render(
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
