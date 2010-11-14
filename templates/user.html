@@ -13,7 +13,10 @@
         <p> Scripts: <p/>
         <ul>
         {% for script in user.scripts %}
-        <li> {{ script.name }} </li>
+        <li>
+        <a href="/stats/script/{{ script.id }}">
+            {{ script.name }}
+        </a></li>
         {% endfor %}
         </ul>
     {% endif %}

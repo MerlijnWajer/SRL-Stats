@@ -1,4 +1,4 @@
-FIXME:
+TODO:
     -   Find some way to always pass certain vars to templates. Constantly
         passing the 'topusers' and 'topscripts' is annoying. Perhaps base.html
         can retrieve it on its own? (Add last commits)
@@ -7,7 +7,5 @@ FIXME:
     -   Manage / Create scripts.
     -   Commit API page.
     -   Add additional URLs (/user/:id/scripts)
-
-TODO:
     -   Charts using matplotlib.
     -   Script Manager integration?
