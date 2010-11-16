@@ -22,11 +22,12 @@
         {% block topnav %}
         <div class="navigation">
             {% for nav, name in {
-                'user/all' : 'Users', 
+                'user/all'   : 'Users', 
                 'script/all' : 'Scripts', 
-                'commit/all' : 'Commits'
+                'commit/all' : 'Commits',
+                ''          : 'Home'
             }.iteritems(): %}
-            <a href="/stats/{{ nav }}/"> {{ name }} </a>
+            <a href="/stats/{{ nav }}"> {{ name }} </a>
             {% endfor %}
             <div class="clearer"><span></span></div>
         </div>
@@ -36,7 +37,7 @@
     <div class="main">
         <div class="content">
             {% block content %}
-            Wat.
+            <p> Welcome to the SRL-stats homepage. </p>
             {% endblock %}
         </div>
         <div class="sidenav">

@@ -7,7 +7,9 @@
     <h1>
         {{ user.name }}
     </h1>
-    <p> Total Time Committed: {{ ttc }} </p>
+    <p> Total Time Committed: 
+        {{ _import['datetime'].timedelta(minutes=ttc) }}
+    </p>
     <p> Total Commits: {{ tc }} </p>
     {% if user.scripts %}
         <p> Scripts: <p/>

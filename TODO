@@ -1,7 +1,4 @@
 TODO:
-    -   Find some way to always pass certain vars to templates. Constantly
-        passing the 'topusers' and 'topscripts' is annoying. Perhaps base.html
-        can retrieve it on its own? (Add last commits)
     -   Main page text.
     -   Login / session
     -   Manage / Create scripts.

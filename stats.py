@@ -24,6 +24,9 @@ from webtool import WebTool
 from query import UserTool, ScriptTool, CommitTool
 from graph import GraphTool
 
+# For date & time utils
+import datetime
+
 BASE_URL = '/stats'
 RESULTS_PER_PAGE = 25
 
@@ -32,6 +35,10 @@ def get_pageid(pageid):
         return max(int(pageid), 1)
     except (ValueError, TypeError):
         return 1
+
+def template_render(template, vars):
+    vars['_import'] = {'datetime' : datetime}
+    return template.render(vars)
 
 
 # URLs:
@@ -66,7 +73,7 @@ def stats(env, start_response):
 def general():
     tmpl = jinjaenv.get_template('base.html')
 
-    return str(tmpl.render(
+    return str(template_render(tmpl, 
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5)}
         ))
 
@@ -78,7 +85,7 @@ def user(userid=None):
     if uinfo['user'] is None:
         return None
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'ttc' : uinfo['time'][1],
             'tc' : uinfo['time'][0], 'user' : uinfo['user']}
@@ -90,7 +97,7 @@ def user_commit(userid=None, pageid=None):
     tmpl = jinjaenv.get_template('usercommits.html')
     user = session.query(User).filter(User.id==userid).first()
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'user' : user, 'commits' : ut.listc(user, 
                 (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)}
@@ -103,7 +110,7 @@ def script(scriptid=None):
     if sinfo['script'] is None:
         return None
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'ttc' : sinfo['time'][1], 'tc' : sinfo['time'][0],
             'script' : sinfo['script'], 'vars' : sinfo['vars']}
@@ -115,7 +122,7 @@ def script_commit(scriptid=None,pageid=None):
     tmpl = jinjaenv.get_template('scriptcommits.html')
     script = session.query(Script).filter(Script.id==scriptid).first()
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'script' : script, 'commits' : st.listc(script,
                 (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)}
@@ -144,7 +151,7 @@ def commit(commitid=None):
     if _commit is None:
         return None
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'commit' : _commit}
         ))
@@ -154,7 +161,7 @@ def users(pageid=None):
 
     tmpl = jinjaenv.get_template('users.html')
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'users' : ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid   }
@@ -165,7 +172,7 @@ def scripts(pageid=None):
 
     tmpl = jinjaenv.get_template('scripts.html')
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'scripts' : st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid   }
@@ -176,7 +183,7 @@ def commits(pageid=None):
 
     tmpl = jinjaenv.get_template('commits.html')
 
-    return str(tmpl.render(
+    return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid   }
