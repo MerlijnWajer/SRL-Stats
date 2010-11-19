@@ -76,6 +76,19 @@
             </ul>
             {% endif %}
 
+            {% if lastcommits %}
+            <h1>Recent commits</h1>
+            <ul>
+                {% for commit in lastcommits: %}
+                <li>
+                <a href="/stats/commit/{{ commit.id }}">
+                    Adds {{ commit.timeadd }} min. ({{ commit.script.name }}, {{ commit.user.name }})
+                </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
             {% endblock sidenav %}
 
         </div>

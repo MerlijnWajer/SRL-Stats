@@ -47,6 +47,7 @@ def template_render(template, vars, default_page=True):
     if default_page:
         vars['topusers']    = ut.top(_limit=5)
         vars['topscripts']  = st.top(_limit=5)
+        vars['lastcommits'] = ct.top(_limit=5)
 
     return template.render(vars)
 
