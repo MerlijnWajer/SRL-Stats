@@ -27,8 +27,14 @@ from graph import GraphTool
 # For date & time utils
 import datetime
 
+from beaker.middleware import SessionMiddleware
+
 BASE_URL = '/stats'
 RESULTS_PER_PAGE = 25
+
+session_options = {
+    'session.cookie_expires' : True
+}
 
 def get_pageid(pageid):
     try:
@@ -58,7 +64,10 @@ def template_render(template, vars):
 """
 
 def stats(env, start_response):
-    r = wt.apply_rule(env['REQUEST_URI'])
+#    session = env['beaker.session']
+
+    r = wt.apply_rule(env['REQUEST_URI'], env)
+
     if r is None:
         start_response('404 Not Found', [('Content-Type', 'text/plain')])
         r = '404: %s' % env['REQUEST_URI']
@@ -70,15 +79,15 @@ def stats(env, start_response):
 
     return [r]
 
-def general():
+def general(env):
     tmpl = jinjaenv.get_template('base.html')
 
     return str(template_render(tmpl, 
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5)}
+        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
+            'session' : env['beaker.session']}
         ))
 
-
-def user(userid=None):
+def user(env, userid=None):
     tmpl = jinjaenv.get_template('user.html')
     uinfo = ut.info(userid)
 
@@ -88,10 +97,11 @@ def user(userid=None):
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'ttc' : uinfo['time'][1],
-            'tc' : uinfo['time'][0], 'user' : uinfo['user']}
+            'tc' : uinfo['time'][0], 'user' : uinfo['user'],
+            'session' : env['beaker.session']}
         ))
 
-def user_commit(userid=None, pageid=None):
+def user_commit(env, userid=None, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('usercommits.html')
@@ -100,10 +110,11 @@ def user_commit(userid=None, pageid=None):
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'user' : user, 'commits' : ut.listc(user, 
-                (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)}
+                (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+            'session' : env['beaker.session']}
         ))
 
-def script(scriptid=None):
+def script(env, scriptid=None):
     tmpl = jinjaenv.get_template('script.html')
     sinfo = st.info(scriptid)
 
@@ -113,10 +124,11 @@ def script(scriptid=None):
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'ttc' : sinfo['time'][1], 'tc' : sinfo['time'][0],
-            'script' : sinfo['script'], 'vars' : sinfo['vars']}
+            'script' : sinfo['script'], 'vars' : sinfo['vars'],
+            'session' : env['beaker.session']}
         ))
 
-def script_commit(scriptid=None,pageid=None):
+def script_commit(env, scriptid=None,pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scriptcommits.html')
@@ -125,10 +137,11 @@ def script_commit(scriptid=None,pageid=None):
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'script' : script, 'commits' : st.listc(script,
-                (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)}
+                (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+            'session' : env['beaker.session']}
         ))
 
-def script_graph(scriptid=None):
+def script_graph(env, scriptid=None):
     sinfo = st.info(scriptid)
 
     vars = sinfo['vars']
@@ -144,7 +157,7 @@ def script_graph(scriptid=None):
     s = gt.pie(fracs,labels,'Variables for %s' % script.name)
     return ['graph', s]
 
-def commit(commitid=None):
+def commit(env, commitid=None):
     tmpl = jinjaenv.get_template('commit.html')
     _commit = ct.info(commitid)
     
@@ -153,10 +166,10 @@ def commit(commitid=None):
 
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'commit' : _commit}
+            'commit' : _commit, 'session' : env['beaker.session']}
         ))
 
-def users(pageid=None):
+def users(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('users.html')
@@ -164,10 +177,10 @@ def users(pageid=None):
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'users' : ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
-            'pageid' : pageid   }
+            'pageid' : pageid, 'session' : env['beaker.session']}
         ))
 
-def scripts(pageid=None):
+def scripts(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scripts.html')
@@ -175,10 +188,10 @@ def scripts(pageid=None):
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'scripts' : st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
-            'pageid' : pageid   }
+            'pageid' : pageid, 'session' : env['beaker.session']}
         ))
 
-def commits(pageid=None):
+def commits(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('commits.html')
@@ -186,9 +199,16 @@ def commits(pageid=None):
     return str(template_render(tmpl,
         {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
             'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
-            'pageid' : pageid   }
+            'pageid' : pageid, 'session' : env['beaker.session']}
         ))
 
+def login(env):
+    if env['REQUEST_METHOD'] is 'POST':
+        pass
+    elif env['REQUEST_METHOD'] is 'GET':
+        pass
+    else:
+        return None
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
@@ -217,7 +237,6 @@ if __name__ == '__main__':
 
     wt.add_rule(re.compile('^%s/user/([0-9]{1,6})/commits/([0-9]{1,6})?$' \
             % BASE_URL), user_commit, ['userid', 'pageid'])
-
 
     # Two rules. We don't want to match /user/all10
     wt.add_rule(re.compile('^%s/user/all/?$' % BASE_URL),
@@ -256,6 +275,8 @@ if __name__ == '__main__':
     wt.add_rule(re.compile('^%s/commit/all/([0-9]{1,6})?$' % BASE_URL),
             commits, ['pageid'])
 
+    wt.add_rule(re.compile('^%s/login$' % BASE_URL), login, [])
+
     # Default page
     wt.add_rule(re.compile('^%s/?$' % BASE_URL),
                 general, [])
@@ -263,5 +284,4 @@ if __name__ == '__main__':
     # One rule to rule them all...
     # ^%s/(user|script|commit)/all/?([0-9]{1,6}?/?$
 
-    WSGIServer(stats).run()
-
+    WSGIServer(SessionMiddleware(stats, session_options)).run()

@@ -33,7 +33,7 @@ class WebTool(object):
         for rule, func, vnames in zip(rules, funcs, varnames):
             self.add_rule(rule, func, vnames)
     
-    def apply_rule(self, url):
+    def apply_rule(self, url, env):
         """
             apply_rule finds an appropriate rule and applies it if found.
         """
@@ -44,7 +44,7 @@ class WebTool(object):
                 if len(l) != len(fv['vars']):
                     raise WebToolException('Matches does not equal variable \
                             amount')
-                return fv['func'](**dict(zip(fv['vars'], l)))
+                return fv['func'](env=env, **dict(zip(fv['vars'], l)))
         return None
 
 def prt(userid=None):
