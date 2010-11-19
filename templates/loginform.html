@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+    SRL Stats - Log in
+{% endblock %}
+
+{% block content %}
+
+    {% if loginsuccess %}
+        <p> You are now logged in. </p>
+    {% elif loginfail %} 
+        <p> Invalid username or password. </p>
+    {% else %}
+        {% if session and session['loggedin'] %}
+            <p> You are already logged in </p>
+        {% else %}
+        <form method="post" action="login">
+            <p> You can log in to the SRL Stats system here. </p>
+            <h2>User:  <input type="text" name="user"></input> </h2>
+            <h2>Pass:  <input type="password" name="pass"></input> </h2>
+            <br/>
+            <input type="submit" value="Log in"> </input>
+        </form>
+    
+        {% endif %}
+    {% endif %}
+
+</form>
+
+{% endblock %}

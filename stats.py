@@ -42,8 +42,12 @@ def get_pageid(pageid):
     except (ValueError, TypeError):
         return 1
 
-def template_render(template, vars):
+def template_render(template, vars, default_page=True):
     vars['_import'] = {'datetime' : datetime}
+    if default_page:
+        vars['topusers']    = ut.top(_limit=5)
+        vars['topscripts']  = st.top(_limit=5)
+
     return template.render(vars)
 
 
@@ -61,6 +65,11 @@ def template_render(template, vars):
 
 /commit/:id         |   Commit Info (Vars, time, user, script)
 /commit/all         |   Commit List.
+
+/login              |   Login form (GET) and login API (POST)
+/logout             |   Delete session
+
+/api
 """
 
 def stats(env, start_response):
@@ -82,10 +91,7 @@ def stats(env, start_response):
 def general(env):
     tmpl = jinjaenv.get_template('base.html')
 
-    return str(template_render(tmpl, 
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'session' : env['beaker.session']}
-        ))
+    return str(template_render(tmpl, {'session' : env['beaker.session']} ))
 
 def user(env, userid=None):
     tmpl = jinjaenv.get_template('user.html')
@@ -95,10 +101,8 @@ def user(env, userid=None):
         return None
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'ttc' : uinfo['time'][1],
-            'tc' : uinfo['time'][0], 'user' : uinfo['user'],
-            'session' : env['beaker.session']}
+        {   'ttc' : uinfo['time'][1], 'tc' : uinfo['time'][0],
+            'user' : uinfo['user'], 'session' : env['beaker.session'] }
         ))
 
 def user_commit(env, userid=None, pageid=None):
@@ -108,8 +112,7 @@ def user_commit(env, userid=None, pageid=None):
     user = session.query(User).filter(User.id==userid).first()
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'user' : user, 'commits' : ut.listc(user, 
+        {   'user' : user, 'commits' : ut.listc(user, 
                 (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'session' : env['beaker.session']}
         ))
@@ -122,8 +125,7 @@ def script(env, scriptid=None):
         return None
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'ttc' : sinfo['time'][1], 'tc' : sinfo['time'][0],
+        {   'ttc' : sinfo['time'][1], 'tc' : sinfo['time'][0],
             'script' : sinfo['script'], 'vars' : sinfo['vars'],
             'session' : env['beaker.session']}
         ))
@@ -135,8 +137,7 @@ def script_commit(env, scriptid=None,pageid=None):
     script = session.query(Script).filter(Script.id==scriptid).first()
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'script' : script, 'commits' : st.listc(script,
+        {   'script' : script, 'commits' : st.listc(script,
                 (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'session' : env['beaker.session']}
         ))
@@ -165,8 +166,7 @@ def commit(env, commitid=None):
         return None
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'commit' : _commit, 'session' : env['beaker.session']}
+        {   'commit' : _commit, 'session' : env['beaker.session']}
         ))
 
 def users(env, pageid=None):
@@ -175,8 +175,7 @@ def users(env, pageid=None):
     tmpl = jinjaenv.get_template('users.html')
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'users' : ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'users' : ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid, 'session' : env['beaker.session']}
         ))
 
@@ -186,8 +185,7 @@ def scripts(env, pageid=None):
     tmpl = jinjaenv.get_template('scripts.html')
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'scripts' : st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'scripts' : st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid, 'session' : env['beaker.session']}
         ))
 
@@ -197,18 +195,45 @@ def commits(env, pageid=None):
     tmpl = jinjaenv.get_template('commits.html')
 
     return str(template_render(tmpl,
-        {   'topusers' : ut.top(_limit=5), 'topscripts' : st.top(_limit=5),
-            'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid, 'session' : env['beaker.session']}
         ))
 
 def login(env):
-    if env['REQUEST_METHOD'] is 'POST':
-        pass
-    elif env['REQUEST_METHOD'] is 'GET':
-        pass
+    tmpl = jinjaenv.get_template('loginform.html')
+
+    if str(env['REQUEST_METHOD']) == 'POST':
+        postdata = env['wsgi.input'].read(int(env['CONTENT_LENGTH']))
+        splitdata = [x.split('=') for x in postdata.split('&')]
+        data = dict(splitdata)
+        if session.query(User).filter(User.name ==
+                data['user']).filter(User.password == data['pass']).all():
+
+            env['beaker.session']['loggedin'] = True
+            env['beaker.session'].save()
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginsuccess' : True}
+            ))
+        else:
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginfail' : True}
+            ))
+
+    elif str(env['REQUEST_METHOD']) == 'GET':
+
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']}
+            ))
     else:
-        return None
+        return env['REQUEST_METHOD'] + str(type(env['REQUEST_METHOD']))
+
+def logout(env):
+    tmpl = jinjaenv.get_template('base.html')
+
+    s = env['beaker.session']
+    s.delete()
+
+    return str(template_render(tmpl, dict()))
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
@@ -276,6 +301,8 @@ if __name__ == '__main__':
             commits, ['pageid'])
 
     wt.add_rule(re.compile('^%s/login$' % BASE_URL), login, [])
+
+    wt.add_rule(re.compile('^%s/logout$' % BASE_URL), logout, [])
 
     # Default page
     wt.add_rule(re.compile('^%s/?$' % BASE_URL),

@@ -29,12 +29,10 @@
             }.iteritems(): %}
             <a href="/stats/{{ nav }}"> {{ name }} </a>
             {% endfor %}
-            {% if session %}
-                {% if session['loggedin']: %}
-                    <a href="/stats/logout"> Log out </a>
-                {% else %}
-                    <a href="/stats/login"> Log in </a>
-                {% endif %}
+            {% if session and session['loggedin'] %}
+                <a href="/stats/logout"> Log out </a>
+            {% else %}
+                <a href="/stats/login"> Log in </a>
             {% endif %}
             <div class="clearer"><span></span></div>
         </div>
