@@ -1,8 +1,9 @@
 TODO:
-    -   Main page text.
-    -   Login / session
+    -   Filter username / password. (Allow characters)  
     -   Manage / Create scripts.
     -   Commit API page.
+
+MAYBE:
     -   Add additional URLs (/user/:id/scripts)
     -   Charts using matplotlib.
     -   Script Manager integration?
