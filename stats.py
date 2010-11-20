@@ -283,6 +283,9 @@ def api_commit(env):
     except ValueError:
         return '130'
 
+    if time < 1:
+        return '130'
+
     del data['time']
 
     script_vars = dict(zip([x.name.lower() for x in script.variables], 
