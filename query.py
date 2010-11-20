@@ -23,13 +23,16 @@ class UserTool(object):
             (User, Commit.user_id == User.id)).group_by(
              User.name, User.id).order_by(desc('sum_1')).offset(
                      _offset).limit(_limit).all()
-    
+
     def info(self, uid):
         """
             Returns the user object with id *uid* and the time and commit count
             of the user.
         """
         user = self.s.query(User).filter(User.id==uid).first()
+        if user is None:
+            return None
+
         time = self.s.query(func.count(Commit.timeadd), 
                 func.sum(Commit.timeadd)).join(
                 (User, Commit.user_id == User.id)).filter(
@@ -58,9 +61,12 @@ class ScriptTool(object):
             (Script, Commit.script_id == Script.id)).group_by(
              Script.name, Script.id).order_by(desc('sum_1')).offset(
                      _offset).limit(_limit).all()
-    
+
     def info(self, sid):
         script = self.s.query(Script).filter(Script.id==sid).first()
+        if script is None:
+            return None
+
         vars = self.s.query(func.sum(CommitVar.amount), Variable.name).join(
                 (Variable, CommitVar.variable_id==Variable.id)).join(
                 (Commit, Commit.id == CommitVar.commit_id)).filter(
@@ -91,4 +97,6 @@ class CommitTool(object):
     def info(self, cid):
         return self.s.query(Commit).filter(Commit.id == cid).first()
 
+    def add(user, script, time, vars):
+        pass
 

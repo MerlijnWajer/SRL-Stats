@@ -5,7 +5,7 @@
 # as well.
 
 # Routes:
-# /graph for graphs? (filetype png?)
+# /graph for graphs? (filetype png/svg?)
 # /script for script pages
 # /user for user pages ex: /user/42/ or /user/script or user/commits
 # /var for var pages ex: /var/42
@@ -18,7 +18,7 @@ os.environ['MPLCONFIGDIR'] = '/tmp'
 from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
 from sql import *
-from webtool import WebTool
+from webtool import WebTool, read_post_data
 
 # Import UserTool
 from query import UserTool, ScriptTool, CommitTool
@@ -29,12 +29,9 @@ import datetime
 
 from beaker.middleware import SessionMiddleware
 
-BASE_URL = '/stats'
-RESULTS_PER_PAGE = 25
-
-session_options = {
-    'session.cookie_expires' : True
-}
+# Import config
+from config import BASE_URL, RESULTS_PER_PAGE, \
+    session_options
 
 def get_pageid(pageid):
     try:
@@ -70,7 +67,18 @@ def template_render(template, vars, default_page=True):
 /login              |   Login form (GET) and login API (POST)
 /logout             |   Delete session
 
-/api
+
+==== TODO / Unfinished ====
+/api/commit
+    POST Data:
+        User / Pass
+        Script
+        Minutes
+        Extra vars
+
+Add /:format?
+/api/scriptinfo/:id
+/api/userinfo/:id
 """
 
 def stats(env, start_response):
@@ -98,7 +106,7 @@ def user(env, userid=None):
     tmpl = jinjaenv.get_template('user.html')
     uinfo = ut.info(userid)
 
-    if uinfo['user'] is None:
+    if uinfo is None:
         return None
 
     return str(template_render(tmpl,
@@ -122,7 +130,7 @@ def script(env, scriptid=None):
     tmpl = jinjaenv.get_template('script.html')
     sinfo = st.info(scriptid)
 
-    if sinfo['script'] is None:
+    if sinfo is None:
         return None
 
     return str(template_render(tmpl,
@@ -204,29 +212,29 @@ def login(env):
     tmpl = jinjaenv.get_template('loginform.html')
 
     if str(env['REQUEST_METHOD']) == 'POST':
-        postdata = env['wsgi.input'].read(int(env['CONTENT_LENGTH']))
-        splitdata = [x.split('=') for x in postdata.split('&')]
-        data = dict(splitdata)
+        data = read_post_data(env)
+
+        # Does the user exist?
         if session.query(User).filter(User.name ==
                 data['user']).filter(User.password == data['pass']).all():
 
             env['beaker.session']['loggedin'] = True
             env['beaker.session'].save()
             return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginsuccess' : True}
-            ))
+            {   'session' : env['beaker.session'], 'loginsuccess' : True} ))
         else:
             return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginfail' : True}
-            ))
+            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
 
     elif str(env['REQUEST_METHOD']) == 'GET':
 
         return str(template_render(tmpl,
-            {   'session' : env['beaker.session']}
-            ))
+            {   'session' : env['beaker.session']}  ))
     else:
+        return None
+
         return env['REQUEST_METHOD'] + str(type(env['REQUEST_METHOD']))
+        # Debug ^
 
 def logout(env):
     tmpl = jinjaenv.get_template('base.html')
@@ -236,6 +244,62 @@ def logout(env):
 
     return str(template_render(tmpl, dict()))
 
+def api_commit(env):
+    if str(env['REQUEST_METHOD']) != 'POST':
+        # 404
+        return None
+
+    data = read_post_data(env)
+    return str(data)
+
+    # TODO: Filter for allowed keywords. (No bogus keywords)
+    # TODO: Filter for keywords that must exist
+
+    user = session.query(User).filter(User.name == data['user']).filter(
+            User.password == data['password']).first()
+    if not user:
+        return '110'
+
+    del data['user']
+    del data['password']
+
+    script = session.query(User).filter(Script.id == data['script']).first()
+
+    if not script:
+        return '120'
+
+    del data['script']
+
+    try
+        time = data['time']
+    except ValueError:
+        return '130'
+
+    del data['time']
+
+    script_vars = dict(zip([x.name for x in script.variables], 
+        script.variables))
+
+    vars = dict()
+
+    for x, y in data.iteritems():
+        if x not in script_vars:
+            return '140'
+        try:
+            v = int(y)
+        except ValueError:
+            return '150'
+
+        vars[script_vars[x]] = v
+
+    res = ct.add(user, script, time, vars)
+
+def api_scriptinfo(env):
+    pass
+
+def api_userinfo(env):
+    pass
+
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     wt = WebTool()
@@ -244,72 +308,7 @@ if __name__ == '__main__':
     ct = CommitTool(session)
     gt = GraphTool()
 
-    import re
-    # Regex rules to call the right stuff on the right url.
-    # May eventually turn it all into one regex? Would make it less readable
-    # though.
-
-    # XXX: TODO: Integers hard limited at 6 chars max. Python has unlimited
-    # integers; but databases do not. If someone passes 999999999999999999
-    # then we will get a database error. This ``fix'' works around it.
-    # Until you get more than 999999 users.
-
-    # User rules
-    wt.add_rule(re.compile('^%s/user/([0-9]{1,6})$' % BASE_URL),
-            user, ['userid'])
-
-    wt.add_rule(re.compile('^%s/user/([0-9]{1,6})/commits$' \
-            % BASE_URL), user_commit, ['userid'])
-
-    wt.add_rule(re.compile('^%s/user/([0-9]{1,6})/commits/([0-9]{1,6})?$' \
-            % BASE_URL), user_commit, ['userid', 'pageid'])
-
-    # Two rules. We don't want to match /user/all10
-    wt.add_rule(re.compile('^%s/user/all/?$' % BASE_URL),
-            users, [])
-
-    wt.add_rule(re.compile('^%s/user/all/([0-9]{1,6})?$' % BASE_URL),
-            users, ['pageid'])
-
-    # Script rules
-
-    wt.add_rule(re.compile('^%s/script/([0-9]{1,6})$' % BASE_URL),
-            script, ['scriptid'])
-
-    wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/commits$' \
-            % BASE_URL), script_commit, ['scriptid'])
-
-    wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/commits/([0-9]{1,6})?$' \
-            % BASE_URL), script_commit, ['scriptid', 'pageid'])
-
-    wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/graph$' % BASE_URL),
-            script_graph, ['scriptid'])
-
-    wt.add_rule(re.compile('^%s/script/all/?$' % BASE_URL),
-            scripts, [])
-
-    wt.add_rule(re.compile('^%s/script/all/([0-9]{1,6})?$' % BASE_URL),
-            scripts, ['pageid'])
-
-    # Commit rules
-    wt.add_rule(re.compile('^%s/commit/([0-9]{1,6})$' % BASE_URL),
-            commit, ['commitid'])
-
-    wt.add_rule(re.compile('^%s/commit/all/?$' % BASE_URL),
-            commits, [])
-
-    wt.add_rule(re.compile('^%s/commit/all/([0-9]{1,6})?$' % BASE_URL),
-            commits, ['pageid'])
-
-    wt.add_rule(re.compile('^%s/login$' % BASE_URL), login, [])
-
-    wt.add_rule(re.compile('^%s/logout$' % BASE_URL), logout, [])
-
-    # Default page
-    wt.add_rule(re.compile('^%s/?$' % BASE_URL),
-                general, [])
-
-    # One rule to rule them all...
-    # ^%s/(user|script|commit)/all/?([0-9]{1,6}?/?$
+    # Add all rules
+    execfile('rules.py')
 
     WSGIServer(SessionMiddleware(stats, session_options)).run()

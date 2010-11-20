@@ -47,11 +47,8 @@ class WebTool(object):
                 return fv['func'](env=env, **dict(zip(fv['vars'], l)))
         return None
 
-def prt(userid=None):
-    print userid, scriptid
-
-if __name__ == '__main__':
-    import re
-    w = WebTool()
-    w.add_rule(re.compile('^/stats/user/([0-9]+)$'), prt, ['userid'])
-    print w.apply_rule('/stats/user/42')
+def read_post_data(env):
+    postdata = env['wsgi.input'].read(int(env['CONTENT_LENGTH']))
+    splitdata = [x.split('=') for x in postdata.split('&')]
+    data = dict(splitdata)
+    return data
