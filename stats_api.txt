@@ -34,19 +34,19 @@ Expected POST data:
 
 ===============================================================================
 Name:
-    User
+    user
 Value:
     Username (or ID, to be discussed)
 
 ===============================================================================
 Name:
-    Password
+    password
 Value
     Password for User
 
 ===============================================================================
 Name:
-    Script
+    script
 Value
     Script ID (or name, to be discussed)
 
