@@ -254,7 +254,7 @@ def api_commit(env):
     # TODO: Filter for allowed keywords. (No bogus keywords)
     # TODO: Filter for keywords that must exist
 
-    if not 'user' in data or not 'pass' in data:
+    if not 'user' in data or not 'password' in data:
         return '110'
 
     user = session.query(User).filter(User.name == data['user']).filter(
