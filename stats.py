@@ -299,6 +299,7 @@ def api_commit(env):
 
     for x, y in data.iteritems():
         # TODO: Randoms are always allowed
+        x = x.lower()
         if x not in script_vars:
             return '140'
         try:
