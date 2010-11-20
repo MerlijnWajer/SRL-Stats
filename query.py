@@ -97,6 +97,23 @@ class CommitTool(object):
     def info(self, cid):
         return self.s.query(Commit).filter(Commit.id == cid).first()
 
-    def add(user, script, time, vars):
-        pass
+    def add(self, user, script, time, vars):
+        c = Commit(time)
 
+        c.user = user
+        c.script = script
+        c.timeadd = time
+        cv = []
+        for x, y in vars.iteritems():
+            commitvar = CommitVar(y)
+            commitvar.commit = c
+            commitvar.variable = x
+            cv.append(commitvar)
+
+
+        for v in cv:
+            self.s.add(v)
+
+        self.s.add(c)
+
+        return True

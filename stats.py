@@ -250,7 +250,6 @@ def api_commit(env):
         return None
 
     data = read_post_data(env)
-    return str(data)
 
     # TODO: Filter for allowed keywords. (No bogus keywords)
     # TODO: Filter for keywords that must exist
@@ -263,26 +262,34 @@ def api_commit(env):
     del data['user']
     del data['password']
 
-    script = session.query(User).filter(Script.id == data['script']).first()
+    script = session.query(Script).filter(Script.id == data['script']).first()
 
     if not script:
         return '120'
 
     del data['script']
 
-    try
+    try:
         time = data['time']
     except ValueError:
         return '130'
 
     del data['time']
 
-    script_vars = dict(zip([x.name for x in script.variables], 
+    script_vars = dict(zip([x.name.lower() for x in script.variables], 
         script.variables))
+
+    randoms = session.query(Variable).filter(Variable.is_var==0).all()
+    r = dict(zip([x.name.lower() for x in randoms], randoms))
+    script_vars.update(r)
 
     vars = dict()
 
+    # TODO: Query random vars
+    # random_vars = 
+
     for x, y in data.iteritems():
+        # TODO: Randoms are always allowed
         if x not in script_vars:
             return '140'
         try:
