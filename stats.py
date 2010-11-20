@@ -293,6 +293,10 @@ def api_commit(env):
         vars[script_vars[x]] = v
 
     res = ct.add(user, script, time, vars)
+    if not res:
+        return '160'
+
+    return '100'
 
 def api_scriptinfo(env):
     pass
