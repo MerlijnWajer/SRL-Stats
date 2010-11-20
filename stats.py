@@ -254,6 +254,9 @@ def api_commit(env):
     # TODO: Filter for allowed keywords. (No bogus keywords)
     # TODO: Filter for keywords that must exist
 
+    if not 'user' data or not 'pass' in data:
+        return '110'
+
     user = session.query(User).filter(User.name == data['user']).filter(
             User.password == data['password']).first()
     if not user:
@@ -262,12 +265,18 @@ def api_commit(env):
     del data['user']
     del data['password']
 
+    if not 'script' in data:
+        return '120'
+
     script = session.query(Script).filter(Script.id == data['script']).first()
 
     if not script:
         return '120'
 
     del data['script']
+
+    if not 'time' in data:
+        return '130'
 
     try:
         time = data['time']
