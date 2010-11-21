@@ -116,4 +116,6 @@ class CommitTool(object):
 
         self.s.add(c)
 
+        self.s.commit()
+
         return True
