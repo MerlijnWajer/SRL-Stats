@@ -56,7 +56,7 @@
                 {% for user in topusers: %}
                 <li>
                 <a href="/stats/user/{{ user[2] }}">
-                    {{ user[1] }} ({{ user[0] }})
+                    {{ user[1] }} ({{ user[0] }} min.)
                 </a>
                 </li>
                 {% endfor %}
@@ -69,7 +69,20 @@
                 {% for script in topscripts: %}
                 <li>
                 <a href="/stats/script/{{ script[2] }}">
-                    {{ script[1] }} ({{ script[0] }})
+                    {{ script[1] }} ({{ script[0] }} min.)
+                </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if topvars %}
+            <h1>Top Variables</h1>
+            <ul>
+                {% for amount, variable in topvars : %}
+                <li>
+                <a href="/stats/variable/{{ variable.id }}">
+                    {{ variable.name }} ({{ amount }})
                 </a>
                 </li>
                 {% endfor %}
@@ -88,7 +101,6 @@
                 {% endfor %}
             </ul>
             {% endif %}
-
             {% endblock sidenav %}
 
         </div>

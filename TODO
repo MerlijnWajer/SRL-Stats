@@ -1,7 +1,10 @@
 TODO:
     -   Filter username / password. (Allow characters)  
     -   Manage / Create scripts.
-    -   Commit API page.
+    -   Create API for signatures.
+    -   Pages and graphs for Variables.
+    -   Pages and graphs for Scripts.
+    -   Pages and graphs for Users.
 
 MAYBE:
     -   Add additional URLs (/user/:id/scripts)

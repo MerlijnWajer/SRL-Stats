@@ -119,3 +119,18 @@ class CommitTool(object):
         self.s.commit()
 
         return True
+
+class VariableTool(object):
+
+    def __init__(self, sess):
+        self.s = sess
+
+    def top(self, _offset=0, _limit=10, only_vars=False):
+        obj = self.s.query(func.sum(CommitVar.amount), Variable).join(
+                (Variable, Variable.id == CommitVar.variable_id))
+        if only_vars:
+            obj = obj.filter(Variable.is_var==1)
+        obj = obj.group_by(Variable).order_by(desc('sum_1')).offset(
+                         _offset).limit(_limit)
+        return obj.all()
+

@@ -21,11 +21,14 @@ from sql import *
 from webtool import WebTool, read_post_data
 
 # Import UserTool
-from query import UserTool, ScriptTool, CommitTool
+from query import UserTool, ScriptTool, CommitTool, VariableTool
 from graph import GraphTool
 
 # For date & time utils
 import datetime
+
+# For regex
+import re
 
 from beaker.middleware import SessionMiddleware
 
@@ -42,9 +45,10 @@ def get_pageid(pageid):
 def template_render(template, vars, default_page=True):
     vars['_import'] = {'datetime' : datetime}
     if default_page:
-        vars['topusers']    = ut.top(_limit=5)
-        vars['topscripts']  = st.top(_limit=5)
-        vars['lastcommits'] = ct.top(_limit=5)
+        vars['topusers']    = ut.top(_limit=4)
+        vars['topscripts']  = st.top(_limit=4)
+        vars['lastcommits'] = ct.top(_limit=4)
+        vars['topvars']     = vt.top(_limit=4, only_vars=True)
 
     return template.render(vars)
 
@@ -82,8 +86,6 @@ Add /:format?
 """
 
 def stats(env, start_response):
-#    session = env['beaker.session']
-
     r = wt.apply_rule(env['REQUEST_URI'], env)
 
     if r is None:
@@ -330,9 +332,12 @@ if __name__ == '__main__':
     ut = UserTool(session)
     st = ScriptTool(session)
     ct = CommitTool(session)
+    vt = VariableTool(session)
     gt = GraphTool()
 
     # Add all rules
     execfile('rules.py')
+
+    usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
     WSGIServer(SessionMiddleware(stats, session_options)).run()
