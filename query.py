@@ -134,3 +134,13 @@ class VariableTool(object):
                          _offset).limit(_limit)
         return obj.all()
 
+    def info(self, variableid):
+        variable = \
+            self.s.query(Variable).filter(Variable.id==variableid).first()
+        if variable is None:
+            return None
+
+        amount = self.s.query(func.sum(CommitVar.amount)).filter(
+                    CommitVar.variable_id==variableid).first()
+
+        return dict(zip(['variable', 'amount'], [variable, amount]))

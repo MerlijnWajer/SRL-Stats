@@ -71,8 +71,6 @@ def template_render(template, vars, default_page=True):
 /login              |   Login form (GET) and login API (POST)
 /logout             |   Delete session
 
-
-==== TODO / Unfinished ====
 /api/commit
     POST Data:
         User / Pass
@@ -80,6 +78,7 @@ def template_render(template, vars, default_page=True):
         Minutes
         Extra vars
 
+TODO:
 Add /:format?
 /api/scriptinfo/:id
 /api/userinfo/:id
@@ -155,9 +154,16 @@ def script_commit(env, scriptid=None,pageid=None):
 
 def script_graph(env, scriptid=None):
     sinfo = st.info(scriptid)
-
+#
     vars = sinfo['vars']
     script = sinfo['script']
+#    from sqlalchemy import func
+#    vars = session.query(Script.name, User.name,
+#            func.sum(Commit.timeadd)).join((Commit, Commit.script_id ==
+#                Script.id)).join((User, User.id ==
+#                    Commit.user_id)).filter(Script.id==1).group_by(Script.name,
+#                            User.name).all()
+#
 
     fracs = []
     labels = []
@@ -178,6 +184,19 @@ def commit(env, commitid=None):
 
     return str(template_render(tmpl,
         {   'commit' : _commit, 'session' : env['beaker.session']}
+        ))
+
+def variable(env, variableid=None):
+    tmpl = jinjaenv.get_template('variable.html')
+    _variable = vt.info(variableid)
+
+    if _variable is None:
+        return None
+
+    return str(template_render(tmpl,
+        {   'variable' : _variable['variable'], 'amount' :
+            _variable['amount'][0],
+            'session' : env['beaker.session'] }
         ))
 
 def users(env, pageid=None):
@@ -209,6 +228,9 @@ def commits(env, pageid=None):
         {   'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid, 'session' : env['beaker.session']}
         ))
+
+def variables(env, pageid=None):
+    pass
 
 def login(env):
     tmpl = jinjaenv.get_template('loginform.html')

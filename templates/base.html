@@ -21,12 +21,13 @@
         </div>
         {% block topnav %}
         <div class="navigation">
-            {% for nav, name in {
-                'user/all'   : 'Users', 
-                'script/all' : 'Scripts', 
-                'commit/all' : 'Commits',
-                ''          : 'Home'
-            }.iteritems(): %}
+            {% for nav, name in [
+                (''          , 'Home'),
+                ('user/all'   , 'Users'), 
+                ('script/all' , 'Scripts'), 
+                ('commit/all' , 'Commits'),
+                ('variable/all' , 'Variables')
+            ]: %}
             <a href="/stats/{{ nav }}"> {{ name }} </a>
             {% endfor %}
             {% if session and session['loggedin'] %}

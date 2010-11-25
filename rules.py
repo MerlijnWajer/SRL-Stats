@@ -55,6 +55,17 @@ wt.add_rule(re.compile('^%s/commit/all/?$' % BASE_URL),
 wt.add_rule(re.compile('^%s/commit/all/([0-9]{1,6})?$' % BASE_URL),
         commits, ['pageid'])
 
+# Variable rules
+wt.add_rule(re.compile('^%s/variable/([0-9]{1,6})$' % BASE_URL),
+        variable, ['variableid'])
+
+wt.add_rule(re.compile('^%s/variable/all/?$' % BASE_URL),
+        variables, [])
+
+wt.add_rule(re.compile('^%s/variable/all/([0-9]{1,6})?$' % BASE_URL),
+        variables, ['pageid'])
+
+# Login rules
 wt.add_rule(re.compile('^%s/login$' % BASE_URL), login, [])
 
 wt.add_rule(re.compile('^%s/logout$' % BASE_URL), logout, [])

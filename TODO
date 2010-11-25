@@ -3,8 +3,15 @@ TODO:
     -   Manage / Create scripts.
     -   Create API for signatures.
     -   Pages and graphs for Variables.
+        -   Per users (pie)
+        -   Per scripts (pie)
     -   Pages and graphs for Scripts.
+        -   Per users (pie)
+        -   Per variables (pie)
+        
     -   Pages and graphs for Users.
+        -   Per script
+        -   Per variable
 
 MAYBE:
     -   Add additional URLs (/user/:id/scripts)
