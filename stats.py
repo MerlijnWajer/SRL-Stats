@@ -156,6 +156,8 @@ def script_commit(env, scriptid=None,pageid=None):
 
 def script_graph(env, scriptid=None):
     sinfo = st.info(scriptid)
+    if sinfo is None:
+        return None
 #
     vars = sinfo['vars']
     script = sinfo['script']
@@ -172,6 +174,7 @@ def script_graph(env, scriptid=None):
 
     for x in vars:
         fracs.append(x[0])
+        #fracs.append(x[2])
         labels.append(x[1])
 
     s = gt.pie(fracs,labels,'Variables for %s' % script.name)

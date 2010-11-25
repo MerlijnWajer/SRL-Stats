@@ -8,13 +8,13 @@
         Commit by {{ commit.user.name }} to {{ commit.script.name }}
     </h1>
     <p> Committed on: {{ commit.timestamp }} </p>
-    <p> Time Committed: {{ commit.timeadd }} </p>
+    <ul>
+        <li> Time Committed: {{ commit.timeadd }} </li>
+
     {% if commit.commitvars %}
-        <p> Variables: <p/>
-        <ul>
         {% for cvar in commit.commitvars %}
         <li> Adds {{ cvar.amount}} of {{ cvar.variable.name }} </li>
         {% endfor %}
-        </ul>
     {% endif %}
+    </ul>
 {% endblock %}
