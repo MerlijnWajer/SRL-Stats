@@ -124,6 +124,7 @@ def user_commit(env, userid=None, pageid=None):
     return str(template_render(tmpl,
         {   'user' : user, 'commits' : ut.listc(user, 
                 (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+            'pageid' : pageid,
             'session' : env['beaker.session']}
         ))
 
@@ -149,6 +150,7 @@ def script_commit(env, scriptid=None,pageid=None):
     return str(template_render(tmpl,
         {   'script' : script, 'commits' : st.listc(script,
                 (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+            'pageid' : pageid,
             'session' : env['beaker.session']}
         ))
 

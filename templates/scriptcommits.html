@@ -16,12 +16,26 @@
             </tr>
         {% for commit in commits %}
             <tr>
-                <td> {{ commit.id }} </td>
+                <td> <a href="/stats/commit/{{ commit.id }}">
+                        {{ commit.id }} </a> </td>
                 <td> {{ commit.timeadd }} </td>
-                <td> {{ commit.user.name }} </td>
+                <td> <a href="/stats/user/{{ commit.user.id }}">
+                        {{ commit.user.name }} </a> </td>
             </tr>
         {% endfor %}
         </table>
-        </ul>
+
+        <p>
+        {% if pageid > 1 %}
+        <a href="/stats/script/{{script.id}}/commits/{{ pageid - 1 }}">prev</a>
+        <a href="/stats/script/{{script.id}}/commits/{{ pageid + 1 }}">next</a>
+        {% else %}
+        <a href="/stats/script/{{script.id}}/commits/{{ pageid + 1 }}">next</a>
+        {% endif %}
+        </p>
+
+    {% else %}
+
+    <p> How now, brown cow? (No more commits) </p>
     {% endif %}
 {% endblock %}
