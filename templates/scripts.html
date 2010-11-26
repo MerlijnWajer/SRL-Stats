@@ -16,7 +16,7 @@
             <tr>
                 <td> {{ script[2] }} </td>
                 <td> 
-                    <a href="/stats/script/{{ script[2] }}">
+                    <a href="{{baseurl}}/script/{{ script[2] }}">
                         {{ script[1] }}
                     </a>
                 </td>
@@ -27,10 +27,10 @@
 
         <p>
         {% if pageid > 1 %}
-        <a href="/stats/script/all/{{ pageid - 1 }}">prev</a>
-        <a href="/stats/script/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/script/all/{{ pageid - 1 }}">prev</a>
+        <a href="{{baseurl}}/script/all/{{ pageid + 1 }}">next</a>
         {% else %}
-        <a href="/stats/script/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/script/all/{{ pageid + 1 }}">next</a>
         {% endif %}
         </p>
 

@@ -16,17 +16,17 @@
         {% for commit in commits %}
             <tr>
                 <td>
-                    <a href="/stats/commit/{{ commit.id }}">
+                    <a href="{{baseurl}}/commit/{{ commit.id }}">
                         {{ commit.id }}
                     </a>
                 </td>
                 <td>
-                    <a href="/stats/script/{{ commit.script.id }}">
+                    <a href="{{baseurl}}/script/{{ commit.script.id }}">
                         {{ commit.script.name }}
                     </a>
                 </td>
                 <td>
-                    <a href="/stats/user/{{ commit.user.id }}">
+                    <a href="{{baseurl}}/user/{{ commit.user.id }}">
                         {{ commit.user.name }}
                     </a>
                 </td>
@@ -37,10 +37,10 @@
 
         <p>
         {% if pageid > 1 %}
-        <a href="/stats/commit/all/{{ pageid - 1 }}">prev</a>
-        <a href="/stats/commit/all/{{ pageid + 1 }}">next</a>
+        <a href="/{{baseurl}}commit/all/{{ pageid - 1 }}">prev</a>
+        <a href="/{{baseurl}}commit/all/{{ pageid + 1 }}">next</a>
         {% else %}
-        <a href="/stats/commit/all/{{ pageid + 1 }}">next</a>
+        <a href="/{{baseurl}}commit/all/{{ pageid + 1 }}">next</a>
         {% endif %}
         </p>
 

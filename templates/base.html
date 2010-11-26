@@ -28,12 +28,12 @@
                 ('commit/all' , 'Commits'),
                 ('variable/all' , 'Variables')
             ]: %}
-            <a href="/stats/{{ nav }}"> {{ name }} </a>
+            <a href="{{baseurl}}/{{ nav }}"> {{ name }} </a>
             {% endfor %}
             {% if session and session['loggedin'] %}
-                <a href="/stats/logout"> Log out </a>
+            <a href="{{baseurl}}/logout"> Log out </a>
             {% else %}
-                <a href="/stats/login"> Log in </a>
+            <a href="{{baseurl}}/login"> Log in </a>
             {% endif %}
             <div class="clearer"><span></span></div>
         </div>
@@ -56,7 +56,7 @@
             <ul>
                 {% for user in topusers: %}
                 <li>
-                <a href="/stats/user/{{ user[2] }}">
+                <a href="{{baseurl}}/user/{{ user[2] }}">
                     {{ user[1] }} ({{ user[0] }} min.)
                 </a>
                 </li>
@@ -69,7 +69,7 @@
             <ul>
                 {% for script in topscripts: %}
                 <li>
-                <a href="/stats/script/{{ script[2] }}">
+                <a href="{{baseurl}}/script/{{ script[2] }}">
                     {{ script[1] }} ({{ script[0] }} min.)
                 </a>
                 </li>
@@ -82,7 +82,7 @@
             <ul>
                 {% for amount, variable in topvars : %}
                 <li>
-                <a href="/stats/variable/{{ variable.id }}">
+                <a href="{{baseurl}}/variable/{{ variable.id }}">
                     {{ variable.name }} ({{ amount }})
                 </a>
                 </li>
@@ -95,7 +95,7 @@
             <ul>
                 {% for commit in lastcommits: %}
                 <li>
-                <a href="/stats/commit/{{ commit.id }}">
+                <a href="{{baseurl}}/commit/{{ commit.id }}">
                     Adds {{ commit.timeadd }} min. ({{ commit.script.name }}, {{ commit.user.name }})
                 </a>
                 </li>

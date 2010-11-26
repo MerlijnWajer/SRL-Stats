@@ -16,12 +16,12 @@
         <ul>
         {% for script in user.scripts %}
         <li>
-        <a href="/stats/script/{{ script.id }}">
+        <a href="{{baseurl}}/script/{{ script.id }}">
             {{ script.name }}
         </a></li>
         {% endfor %}
         </ul>
     {% endif %}
 
-    <a href="/stats/user/{{user.id}}/commits"> Commits by this user </a>
+    <a href="{{baseurl}}/user/{{user.id}}/commits"> Commits by this user </a>
 {% endblock %}

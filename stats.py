@@ -49,6 +49,7 @@ def template_render(template, vars, default_page=True):
         vars['topscripts']  = st.top(_limit=4)
         vars['lastcommits'] = ct.top(_limit=4)
         vars['topvars']     = vt.top(_limit=4, only_vars=True)
+        vars['baseurl']     = BASE_URL
 
     return template.render(vars)
 
