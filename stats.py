@@ -17,7 +17,7 @@ os.environ['MPLCONFIGDIR'] = '/tmp'
 
 from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
-from sql import *
+from sql import User, Script, Variable, Commit, CommitVar, Base, session
 from webtool import WebTool, read_post_data
 
 # Import UserTool
