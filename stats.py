@@ -36,6 +36,13 @@ from beaker.middleware import SessionMiddleware
 from config import BASE_URL, RESULTS_PER_PAGE, \
     session_options
 
+# Log levels
+LVL_ALWAYS = 0          # Will always be shown.
+LVL_NOTABLE = 42        # Notable information.
+LVL_INFORMATIVE = 314   # Informative
+LVL_VERBOSE = 666       # Verbose information. This should be everything except
+                        # stuff like what variables contain.
+
 def get_pageid(pageid):
     try:
         return max(int(pageid), 1)
@@ -86,6 +93,9 @@ Add /:format?
 """
 
 def stats(env, start_response):
+    log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
+            (env['REQUEST_URI'], env['REMOTE_ADDR']))
+
     r = wt.apply_rule(env['REQUEST_URI'], env)
 
     if r is None:
@@ -250,9 +260,13 @@ def login(env):
 
             env['beaker.session']['loggedin'] = True
             env['beaker.session'].save()
+            log.log([], LVL_NOTABLE, PyLogger.INFO,
+                    'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
             return str(template_render(tmpl,
             {   'session' : env['beaker.session'], 'loginsuccess' : True} ))
         else:
+            log.log([], LVL_NOTABLE, PyLogger.INFO,
+                    'Failed login %s : %s' % (env['REMOTE_ADDR'], data['user']))
             return str(template_render(tmpl,
             {   'session' : env['beaker.session'], 'loginfail' : True}  ))
 
@@ -263,14 +277,14 @@ def login(env):
     else:
         return None
 
-        return env['REQUEST_METHOD'] + str(type(env['REQUEST_METHOD']))
-        # Debug ^
-
 def logout(env):
     tmpl = jinjaenv.get_template('base.html')
 
     s = env['beaker.session']
     s.delete()
+
+    log.log([], LVL_NOTABLE, PyLogger.INFO,
+            'Logut %s' % env['REMOTE_ADDR'])
 
     return str(template_render(tmpl, dict()))
 
@@ -281,9 +295,16 @@ def api_commit(env):
 
     data = read_post_data(env)
 
-    # TODO: Filter for allowed keywords. (No bogus keywords)
-    # TODO: Filter for keywords that must exist
 
+    # XXX FIXME This is ugly
+    pd = data.copy()
+    pd['password'] = 'xxxxxxxx'
+    log.log([], LVL_INFORMATIVE, PyLogger.INFO,
+            'API_COMMIT: %s, %s' % (env['REMOTE_ADDR'], pd))
+
+
+    # XXX: Check username. injection is not possible afaik? Check anyway.
+    # XXX: Also, space in name is '+' (POST RFC)
     if not 'user' in data or not 'password' in data:
         return '110'
 
@@ -362,6 +383,17 @@ if __name__ == '__main__':
     ct = CommitTool(session)
     vt = VariableTool(session)
     gt = GraphTool()
+
+    from log import PyLogger
+
+    log = PyLogger()
+
+    verbosity = LVL_VERBOSE
+
+    log.assign_logfile('/tmp/stats.log', verbosity, (PyLogger.WARNING,
+        PyLogger.INFO))
+    log.assign_logfile('/tmp/stats.err', verbosity, (PyLogger.ERROR,))
+    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Starting the SRL-Stats server')
 
     # Add all rules
     execfile('rules.py')
