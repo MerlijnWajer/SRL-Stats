@@ -1,0 +1,37 @@
+SRL Stats System. http://wizzup.org/stats/
+
+If you want to run the system, you'll need the following components:
+Python (jinja2, sqlalchemy, flup (WSGIServer), matplotlib and possibly numpy)
+I used lighttpd, but apache and other should work fine too. The system uses
+WSGI/FCGI.
+
+This is my config:
+
+url.rewrite-once = (
+                "^/stats" => "stats.fcgi"
+        )
+
+# You'll need a file called 'stats.fcgi' in your docroot and symlink it to the
+# stats.py.
+
+fastcgi.server += ( ".fcgi" =>
+  ( "statsfcgi" =>
+    (   
+        "socket"        => "/tmp/stats.sock-1",
+        "docroot"       => "/home/merlijn/srl-stats"
+    )
+  )
+)
+
+The config.py file contains the base url, you'll probably want to change this.
+
+Also fill in stats_credentials.py:
+
+dbu = 'statsdbuserhere'
+dbpwd = 'somepasshere'
+dwh = 'localhost'
+dbp = '5432' # psql port
+dbname = 'statsdbnamehere'
+
+And if you want to use a different database, edit sql.py appropriately. (Change
+the engine line)
