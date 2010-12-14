@@ -14,7 +14,7 @@
         {% if session and session['loggedin'] %}
             <p> You are already logged in </p>
         {% else %}
-        <form method="post" action="login">
+        <form method="post" action="{{baseurl}}/login">
             <p> You can log in to the SRL Stats system here. </p>
             <h2>User:  <input type="text" name="user"></input> </h2>
             <h2>Pass:  <input type="password" name="pass"></input> </h2>

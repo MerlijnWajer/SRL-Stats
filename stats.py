@@ -1,15 +1,8 @@
 #!/usr/bin/env python
 
-# TODO:
-# Fix templates so not every child has to get data for the ``total'' stats
-# as well.
-
 # Routes:
 # /graph for graphs? (filetype png/svg?)
-# /script for script pages
-# /user for user pages ex: /user/42/ or /user/script or user/commits
 # /var for var pages ex: /var/42
-# /commit/:commitid specific commit info
 
 # HAX.
 import os
@@ -76,6 +69,8 @@ def template_render(template, vars, default_page=True):
 /commit/:id         |   Commit Info (Vars, time, user, script)
 /commit/all         |   Commit List.
 
+/variable/id:       |   Variable Info.
+
 /login              |   Login form (GET) and login API (POST)
 /logout             |   Delete session
 
@@ -90,6 +85,17 @@ TODO:
 Add /:format?
 /api/scriptinfo/:id
 /api/userinfo/:id
+
+/manage/scripts/            |   List scripts, link to /manage/script/scriptid
+/manage/script/:scriptid    |   Show script vars. Allow people to add vars to
+                            |   their script. (But not create not vars, nor
+                            |   delete vars from their script)
+
+/manage/variables           |   Add variables to the system.
+
+/manage/commits/            |   For admins? Delete commits?
+/manage/users/              |   For admins?
+/manage/user                |   ?
 """
 
 def stats(env, start_response):
@@ -108,6 +114,14 @@ def stats(env, start_response):
         start_response('200 OK', [('Content-Type', 'text/html;charset=utf8')])
 
     return [r]
+
+def loggedin(env):
+    """
+        Return true when logged in.
+    """
+    if 'loggedin' in env['beaker.session']:
+        return env['beaker.session']['loggedin'] is True
+    return False
 
 def general(env):
     tmpl = jinjaenv.get_template('base.html')
@@ -246,6 +260,7 @@ def commits(env, pageid=None):
         ))
 
 def variables(env, pageid=None):
+    # FIXME
     pass
 
 def login(env):
@@ -255,10 +270,12 @@ def login(env):
         data = read_post_data(env)
 
         # Does the user exist?
-        if session.query(User).filter(User.name ==
-                data['user']).filter(User.password == data['pass']).all():
-
+        res =  session.query(User).filter(User.name ==
+                data['user']).filter(User.password == data['pass']).first()
+        if res:
             env['beaker.session']['loggedin'] = True
+            env['beaker.session']['loggedin_id'] = res.id
+            env['beaker.session']['loggedin_name'] = res.name
             env['beaker.session'].save()
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
@@ -374,6 +391,43 @@ def api_scriptinfo(env):
 
 def api_userinfo(env):
     pass
+
+def manage_scripts(env):
+    if not loggedin(env):
+        tmpl = jinjaenv.get_template('loginform.html')
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']}  ))
+    
+    user = session.query(User).filter(User.id == \
+            env['beaker.session']['loggedin_id']).first()
+
+    if not user:
+        return None
+
+    tmpl = jinjaenv.get_template('managescripts.html')
+
+    return str(template_render(tmpl, 
+        {   'session' : env ['beaker.session'],
+            'user' : user } ))
+
+    # If we get to here, we are logged in.
+def manage_script(env, scriptid):
+    if not loggedin:
+        tmpl = jinjaenv.get_template('loginform.html')
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']}  ))
+
+    script = session.query(Script).filter(Script.id == scriptid).first()
+    
+    if not script:
+        return None
+
+    tmpl = jinjaenv.get_template('scriptmanage.html')
+
+    return str(template_render(tmpl,
+        { 'session' : env ['beaker.session'],
+            'script' : script
+            }))
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))

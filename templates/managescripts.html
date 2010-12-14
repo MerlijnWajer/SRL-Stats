@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}
+    Script Management: {{ user.name }}
+{% endblock %}
+
+{% block content %}
+    <h1> Your scripts: </h1>
+    {% if user.scripts: %}
+    <ul>
+        {% for script in user.scripts %}
+        <li>
+        <a href="{{baseurl}}/manage/scripts/{{ script.id }}">{{ script.name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endblock %}
