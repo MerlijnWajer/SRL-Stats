@@ -48,7 +48,10 @@ class WebTool(object):
         return None
 
 def read_post_data(env):
-    postdata = env['wsgi.input'].read(int(env['CONTENT_LENGTH']))
+    postdata = env['wsgi.input'].read()
     splitdata = [x.split('=') for x in postdata.split('&')]
-    data = dict(splitdata)
+    try:
+        data = dict(splitdata)
+    except (TypeError, ValueError):
+        data = None
     return data
