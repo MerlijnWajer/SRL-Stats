@@ -5,4 +5,31 @@
 
 {% block content %}
 <h1> {{ script.name }} </h1>
+
+{% if script.variables %}
+<p> Script Variables: </p>
+
+<ul>
+    {% for var in script.variables %}
+    <li> {{ var }} </li>
+    {% endfor %}
+</ul>
+{% endif %}
+<h2> Add variable: </h2>
+
+{% if vars %}
+    <form method="post" action="/stats/manage/script/{{ script.id }}">
+    <select name="variable">
+
+    {% for v in vars %}
+        <option value="{{ v.id }}"> {{ v.name }} </option>
+    {% endfor %}
+
+    </select>
+    <input type="submit" value="Add variable"> </input>
+    </form>
+{% else %}
+It appears there are no variables available.
+{% endif %}
+
 {% endblock %}

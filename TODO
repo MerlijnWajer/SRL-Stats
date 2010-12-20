@@ -1,7 +1,10 @@
 TODO:
-    -   Filter username / password. (Allow characters)  
-    -   Manage / Create scripts.
+    -   Create scripts.
+    -   Filter username / password. (Allow characters)
     -   Create API for signatures.
+    -   Finish /variable/all pages.
+    -   Add optionparser for logfiles, etc.
+
     -   Pages and graphs for Variables.
         -   Per users (pie)
         -   Per scripts (pie)
@@ -12,6 +15,7 @@ TODO:
     -   Pages and graphs for Users.
         -   Per script
         -   Per variable
+
 
 MAYBE:
     -   Add additional URLs (/user/:id/scripts)

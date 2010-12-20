@@ -31,9 +31,14 @@
             <a href="{{baseurl}}/{{ nav }}"> {{ name }} </a>
             {% endfor %}
             {% if session and session['loggedin'] %}
+            <a href="{{baseurl}}/manage/scripts">
+                My Scripts
+            </a>
+
             <a href="{{baseurl}}/logout">
                 Log out ({{ session['loggedin_name'] }})
             </a>
+
             {% else %}
             <a href="{{baseurl}}/login"> Log in </a>
             {% endif %}

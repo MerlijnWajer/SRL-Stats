@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Stats Module. Run this via fcgi.
+"""
 
 # Routes:
 # /graph for graphs? (filetype png/svg?)
@@ -44,12 +47,13 @@ def get_pageid(pageid):
 
 def template_render(template, vars, default_page=True):
     vars['_import'] = {'datetime' : datetime}
+    vars['baseurl']     = BASE_URL
+
     if default_page:
         vars['topusers']    = ut.top(_limit=4)
         vars['topscripts']  = st.top(_limit=4)
         vars['lastcommits'] = ct.top(_limit=4)
         vars['topvars']     = vt.top(_limit=4, only_vars=True)
-        vars['baseurl']     = BASE_URL
 
     return template.render(vars)
 
@@ -396,7 +400,7 @@ def manage_scripts(env):
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return str(template_render(tmpl,
-            {   'session' : env['beaker.session']}  ))
+            {   'session' : env['beaker.session']} ))
     
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -408,11 +412,12 @@ def manage_scripts(env):
 
     return str(template_render(tmpl, 
         {   'session' : env ['beaker.session'],
-            'user' : user } ))
+            'user' : user }))
 
     # If we get to here, we are logged in.
+
 def manage_script(env, scriptid):
-    if not loggedin:
+    if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return str(template_render(tmpl,
             {   'session' : env['beaker.session']}  ))
@@ -422,11 +427,35 @@ def manage_script(env, scriptid):
     if not script:
         return None
 
-    tmpl = jinjaenv.get_template('scriptmanage.html')
+    if str(env['REQUEST_METHOD']) == 'POST':
+            data = read_post_data(env)
+
+            if 'variable' in data:
+                try:
+                    id = data['variable']
+                except ValueError:
+                    return str('Invalid POST data: Not a number')
+
+            var = session.query(Variable).filter(Variable.id == id).first()
+
+            if var is None:
+                return str('Invalid POST data: No such variable')
+            
+            if var not in script.variables:
+                script.variables.append(var)
+
+            session.commit()
+
+    vars = session.query(Variable).filter(Variable.is_var==1).all()
+    vars_intersect = filter(lambda x: x not in script.variables, vars) if \
+        script.variables is not None else vars
+
+    tmpl = jinjaenv.get_template('managescript.html')
 
     return str(template_render(tmpl,
         { 'session' : env ['beaker.session'],
-            'script' : script
+            'script' : script,
+            'vars' : vars_intersect
             }))
 
 if __name__ == '__main__':

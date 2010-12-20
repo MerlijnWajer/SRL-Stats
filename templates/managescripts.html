@@ -9,7 +9,8 @@
     <ul>
         {% for script in user.scripts %}
         <li>
-        <a href="{{baseurl}}/manage/scripts/{{ script.id }}">{{ script.name }}</a>
+        <a href="{{baseurl}}/script/{{ script.id }}">{{ script.name }}</a>
+        <a href="{{baseurl}}/manage/script/{{ script.id }}"> (Manage)</a>
         </li>
         {% endfor %}
     </ul>
