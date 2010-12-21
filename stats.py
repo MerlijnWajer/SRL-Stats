@@ -281,7 +281,19 @@ def login(env):
             return str('Error: Invalid post data')
 
         if 'user' not in data or 'pass' not in data:
-            return str('Error: Missing user or pass')
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
+
+        data['user'] = data['user'].replace('+', ' ')
+        data['pass'] = data['pass'].replace('+', ' ')
+
+        if not alphanumspace.match(data['user']):
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
+
+        if not alphanumspace.match(data['pass']):
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
 
         # Does the user exist?
         res =  session.query(User).filter(User.name ==
@@ -335,9 +347,17 @@ def api_commit(env):
             'API_COMMIT: %s, %s' % (env['REMOTE_ADDR'], pd))
 
 
-    # XXX: Check username. injection is not possible afaik? Check anyway.
-    # XXX: Also, space in name is '+' (POST RFC)
     if not 'user' in data or not 'password' in data:
+        return '110'
+
+    data['user'] = data['user'].replace('+', ' ')
+    data['password'] = data['password'].replace('+', ' ')
+
+    # Space in name is '+' (POST RFC)
+    if not alphanumspace.match(data['user']):
+        return '110'
+
+    if not alphanumspace.match(data['password']):
         return '110'
 
     user = session.query(User).filter(User.name == data['user']).filter(
