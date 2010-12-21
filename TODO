@@ -1,5 +1,4 @@
 TODO:
-    -   Filter username / password. (Allow characters)
     -   Fix bug: Is a script/user has no commits, it isn't listed in the
         ``Scripts / User'' list.
     -   Create API for signatures.
