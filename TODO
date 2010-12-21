@@ -5,6 +5,10 @@ TODO:
     -   Create API for signatures.
     -   Finish /variable/all pages.
     -   Add optionparser for logfiles, etc.
+    -   My Commits page?
+    -   Customized page if you're logged in? Recent commit by you, recent
+        commits to your scripts?
+    -   Add additional URLs (/user/:id/scripts)
 
     -   Pages and graphs for Variables.
         -   Per users (pie)
@@ -19,6 +23,5 @@ TODO:
 
 
 MAYBE:
-    -   Add additional URLs (/user/:id/scripts)
     -   Charts using matplotlib.
     -   Script Manager integration?
