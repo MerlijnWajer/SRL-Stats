@@ -39,6 +39,9 @@ LVL_INFORMATIVE = 314   # Informative
 LVL_VERBOSE = 666       # Verbose information. This should be everything except
                         # stuff like what variables contain.
 
+# We use this to check input for sanity.
+alphanumspace = re.compile('^[0-9,A-z, ]+$')
+
 def get_pageid(pageid):
     try:
         return max(int(pageid), 1)
@@ -47,7 +50,7 @@ def get_pageid(pageid):
 
 def template_render(template, vars, default_page=True):
     vars['_import'] = {'datetime' : datetime}
-    vars['baseurl']     = BASE_URL
+    vars['baseurl'] = BASE_URL
 
     if default_page:
         vars['topusers']    = ut.top(_limit=4)
@@ -85,15 +88,16 @@ def template_render(template, vars, default_page=True):
         Minutes
         Extra vars
 
+/manage/scripts/            |   List scripts, link to /manage/script/scriptid
+                            |   Allow script creation
+/manage/script/:scriptid    |   Show script vars. Allow people to add vars to
+                            |   their script. (But not create not vars, nor
+                            |   delete vars from their script)
+
 TODO:
 Add /:format?
 /api/scriptinfo/:id
 /api/userinfo/:id
-
-/manage/scripts/            |   List scripts, link to /manage/script/scriptid
-/manage/script/:scriptid    |   Show script vars. Allow people to add vars to
-                            |   their script. (But not create not vars, nor
-                            |   delete vars from their script)
 
 /manage/variables           |   Add variables to the system.
 
@@ -273,9 +277,16 @@ def login(env):
     if str(env['REQUEST_METHOD']) == 'POST':
         data = read_post_data(env)
 
+        if data is None:
+            return str('Error: Invalid post data')
+
+        if 'user' not in data or 'pass' not in data:
+            return str('Error: Missing user or pass')
+
         # Does the user exist?
         res =  session.query(User).filter(User.name ==
                 data['user']).filter(User.password == data['pass']).first()
+
         if res:
             env['beaker.session']['loggedin'] = True
             env['beaker.session']['loggedin_id'] = res.id
@@ -430,6 +441,9 @@ def manage_script(env, scriptid):
     if str(env['REQUEST_METHOD']) == 'POST':
             data = read_post_data(env)
 
+            if data is None:
+                return str('Error: Invalid POST data')
+
             if 'variable' in data:
                 try:
                     id = data['variable']
@@ -457,6 +471,53 @@ def manage_script(env, scriptid):
             'script' : script,
             'vars' : vars_intersect
             }))
+
+def create_script(env):
+    if not loggedin(env):
+        tmpl = jinjaenv.get_template('loginform.html')
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']}  ))
+
+    tmpl = jinjaenv.get_template('createscript.html')
+
+    if str(env['REQUEST_METHOD']) == 'POST':
+            data = read_post_data(env)
+            if data is None:
+                return str('Error: Invalid POST data')
+
+            if 'script' in data:
+                s = data['script']
+                s = s.replace('+', ' ')
+
+            if not alphanumspace.match(s):
+                return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                    'error' : 'Error: Script contains invalid characters'}))
+
+            res = session.query(Script).filter(Script.name == s).all()
+            if res:
+                return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                    'error' : 'Error: Script already exists'}))
+
+            user = session.query(User).filter(User.id == \
+                    env['beaker.session']['loggedin_id']).first()
+
+            if not user:
+                return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                    'error' : 'Error: Invalid user in session?'}))
+
+            script = Script(s)
+            script.owner = user
+
+            session.add(script)
+            session.commit()
+
+            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                  'newscript' : script }))
+
+    return str(template_render(tmpl,
+        { 'session' : env ['beaker.session']
+            }))
+
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))

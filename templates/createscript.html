@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}
+    Script Management: Create Script.
+{% endblock %}
+
+{% block content %}
+<h1> Create a new script </h1>
+
+{% if error %}
+    <p> Error: {{ error }} </p>
+    <form method="post" action="{{baseurl}}/manage/script/new">
+        <h2>Name:  <input type="text" name="script"></input> </h2>
+        <input type="submit" value="Create Script"> </input>
+    </form>
+{% else %}
+    {% if newscript %}
+    You just created {{ newscript.name }}. You can <a
+        href="{{baseurl}}/manage/script/{{newscript.id}}"> Manage </a> it here.
+    {% else %}
+    <form method="post" action="{{baseurl}}/manage/script/new">
+        <h2>Name:  <input type="text" name="script"></input> </h2>
+        <input type="submit" value="Create Script"> </input>
+    </form>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

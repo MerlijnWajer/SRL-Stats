@@ -81,6 +81,7 @@ wt.add_rule(re.compile('^%s/api/ui/([0-9]{1-6})$' % BASE_URL),
 wt.add_rule(re.compile('^%s/manage/scripts$' % BASE_URL), manage_scripts, [])
 wt.add_rule(re.compile('^%s/manage/script/([0-9]{1,6})$' % BASE_URL),
     manage_script, ['scriptid'])
+wt.add_rule(re.compile('^%s/manage/script/new$' % BASE_URL), create_script, [])
 
 
 # Default page
