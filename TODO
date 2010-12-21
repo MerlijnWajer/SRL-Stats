@@ -1,6 +1,7 @@
 TODO:
-    -   Fix bug: Is a script/user has no commits, it isn't listed in the
+    -   Fix bug: If a script/user has no commits, it isn't listed in the
         ``Scripts / User'' list.
+    -   Require email at registration.
     -   Create API for signatures.
     -   Finish /variable/all pages.
     -   Add optionparser for logfiles, etc.

@@ -538,6 +538,47 @@ def create_script(env):
         { 'session' : env ['beaker.session']
             }))
 
+def register_user(env):
+    tmpl = jinjaenv.get_template('registeruser.html')
+
+    if str(env['REQUEST_METHOD']) == 'POST':
+        data = read_post_data(env)
+
+        if data is None:
+            return str('Error: Invalid post data')
+
+        if 'user' not in data or 'pass' not in data:
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'registerfail' : True}  ))
+
+        data['user'] = data['user'].replace('+', ' ')
+        data['pass'] = data['pass'].replace('+', ' ')
+
+        if not alphanumspace.match(data['user']):
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'registerfail' : True}  ))
+
+        if not alphanumspace.match(data['pass']):
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'registerfail' : True}  ))
+
+        # Does the user exist?
+        res =  session.query(User).filter(User.name ==
+                data['user']).filter(User.password == data['pass']).first()
+
+        user = User(data['user'], data['pass'])
+
+        session.add(user)
+        session.commit()
+
+        return str(template_render(tmpl,
+            { 'session' : env['beaker.session'], 'registersuccess' : True} ))
+
+    elif str(env['REQUEST_METHOD']) == 'GET':
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']}  ))
+    else:
+        return None
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))

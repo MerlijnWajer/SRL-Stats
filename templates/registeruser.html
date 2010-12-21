@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+    SRL Stats - Register
+{% endblock %}
+
+{% block content %}
+
+    {% if registersuccess %}
+        <p> You are now registered. </p>
+    {% elif registerfail %} 
+        <p> Invalid username or password. </p>
+    {% else %}
+        <form method="post" action="{{baseurl}}/register">
+            <p>
+                You can register to the SRL Stats system here.
+            </p>
+            <p>
+                Only Alpha Numeric characters (0-9, A-z) and spaces are allowed.
+            </p>
+            <h2>User:  <input type="text" name="user"></input> </h2>
+            <h2>Pass:  <input type="password" name="pass"></input> </h2>
+            <br/>
+            <input type="submit" value="Register"> </input>
+        </form>
+    {% endif %}
+
+</form>
+
+{% endblock %}

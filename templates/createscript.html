@@ -14,7 +14,7 @@
     </form>
 {% else %}
     {% if newscript %}
-    You just created {{ newscript.name }}. You can <a
+    You just created <b>{{ newscript.name }}</b>. You can <a
         href="{{baseurl}}/manage/script/{{newscript.id}}"> Manage </a> it here.
     {% else %}
     <form method="post" action="{{baseurl}}/manage/script/new">
