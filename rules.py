@@ -85,6 +85,15 @@ wt.add_rule(re.compile('^%s/manage/script/([0-9]{1,6})$' % BASE_URL),
     manage_script, ['scriptid'])
 wt.add_rule(re.compile('^%s/manage/script/new$' % BASE_URL), create_script, [])
 
+wt.add_rule(re.compile('^%s/api/script/([0-9]{1,6})$' % BASE_URL),
+    signature_api_script, ['scriptid'])
+
+wt.add_rule(re.compile('^%s/api/user/([0-9]{1,6})$' % BASE_URL),
+    signature_api_user, ['userid'])
+
+wt.add_rule(re.compile('^%s/api/commit/last$' % BASE_URL), 
+        signature_api_commit, [])
+
 
 # Default page
 wt.add_rule(re.compile('^%s/?$' % BASE_URL),

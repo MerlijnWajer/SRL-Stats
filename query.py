@@ -38,7 +38,10 @@ class UserTool(object):
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
 
-        return dict(zip(['user', 'time'], [user, time]))
+        restime = {'commit_amount' : time[0], 'commit_time' : time[1] if time[1]
+                is not None else 0}
+
+        return dict(zip(['user', 'time'], [user, restime]))
 
     def listc(self, user, _offset=0, _limit=10):
         """
@@ -56,9 +59,8 @@ class ScriptTool(object):
         self.s = sess
 
     def top(self, _offset=0, _limit=10):
-        return self.s.query(func.sum(Commit.timeadd), Script.name, Script.id \
-                ).join(
-            (Script, Commit.script_id == Script.id)).group_by(
+        return self.s.query(func.sum(Commit.timeadd), Script.name, Script.id) \
+            .join((Script, Commit.script_id == Script.id)).group_by(
              Script.name, Script.id).order_by(desc('sum_1')).offset(
                      _offset).limit(_limit).all()
 
@@ -76,7 +78,10 @@ class ScriptTool(object):
                 (Script, Commit.script_id == Script.id)).filter(
                 Script.id == sid).first()
 
-        return dict(zip(['script', 'vars', 'time'], [script, vars, time]))
+        restime = {'commit_amount' : time[0], 'commit_time' : time[1] if time[1]
+                is not None else 0}
+
+        return dict(zip(['script', 'vars', 'time'], [script, vars, restime]))
 
     def listc(self, script, _offset=0, _limit=10):
         commits = self.s.query(Commit).join((Script,

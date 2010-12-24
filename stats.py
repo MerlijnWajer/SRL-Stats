@@ -118,6 +118,9 @@ def stats(env, start_response):
     elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
         start_response('200 OK', [('Content-Type', 'image/svg+xml')])
         r = r[1]
+    elif type(r) in (tuple, list) and len(r) >= 1:
+        start_response('200 OK', [('Content-Type', r[0])])
+        r = r[1]
     else:
         start_response('200 OK', [('Content-Type', 'text/html;charset=utf8')])
 
@@ -144,7 +147,8 @@ def user(env, userid=None):
         return None
 
     return str(template_render(tmpl,
-        {   'ttc' : uinfo['time'][1], 'tc' : uinfo['time'][0],
+        {   'ttc' : uinfo['time']['commit_amount'],
+            'tc' : uinfo['time']['commit_time'],
             'user' : uinfo['user'], 'session' : env['beaker.session'] }
         ))
 
@@ -169,9 +173,11 @@ def script(env, scriptid=None):
         return None
 
     return str(template_render(tmpl,
-        {   'ttc' : sinfo['time'][1], 'tc' : sinfo['time'][0],
+        {   'ttc' : sinfo['time']['commit_amount'],
+            'tc' :  sinfo['time']['commit_time'],
             'script' : sinfo['script'], 'vars' : sinfo['vars'],
-            'session' : env['beaker.session']}
+            'session' : env['beaker.session']
+        }
         ))
 
 def script_commit(env, scriptid=None,pageid=None):
@@ -579,6 +585,50 @@ def register_user(env):
             {   'session' : env['beaker.session']}  ))
     else:
         return None
+
+def signature_api_script(env, scriptid):
+    info = st.info(scriptid)
+
+    if info is None:
+        return None
+
+    ret =  'commits: %d\n' % info['time']['commit_amount']
+    ret += 'time: %d\n' % info['time']['commit_time']
+    ret += 'script: %s\n' % info['script'].name
+    ret += 'owner: %s\n' % info['script'].owner.name
+    ret += 'vars:\n'
+    for x, y in info['vars']:
+        ret += '%s: %d\n' % (y, x)
+    return ['text/plain', str(ret)]
+
+    # TODO:
+    # Add more info: Last commit by, Last commit on.
+
+def signature_api_user(env, userid):
+    info = ut.info(userid)
+
+    if info is None:
+        return None
+
+    ret =  'commits: %d\n' % info['time']['commit_amount']
+    ret += 'time: %d\n' % info['time']['commit_time']
+    ret += 'user: %s\n' % info['user'].name
+
+    return ['text/plain', str(ret)]
+
+    # TODO:
+    # Add more info: Last commit to, Last commit on.
+
+def signature_api_commit(env):
+    info = ct.top(_limit=1)
+
+    if not info:
+        return none
+
+    info = info[0]
+
+    return repr({'script' : info.script, 'user' : info.user, 'timeadd' :
+        info.timeadd, 'time' : info.timestamp.isoformat() })
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
