@@ -8,11 +8,7 @@
         {{ script.name }}
     </h1>
     <p> Total Time Committed: 
-        {% if ttc %}
         {{ _import['datetime'].timedelta(minutes=ttc) }}
-        {% else %}
-        {{ _import['datetime'].timedelta(minutes=0) }}
-        {% endif %}
     </p>
     <p> Total Commits: {{ tc }} </p>
     {% if vars %}
