@@ -4,49 +4,39 @@
 {% endblock %}
 
 {% block content %}
-    {% if commits %}
+    {% if variables %}
 
         <table>
             <tr>
-                <th> Commit ID </th>
-                <th> Script Name </th>
-                <th> User Name </th>
-                <th> Time (Minutes) </th>
+                <th> Variable ID </th>
+                <th> Variable Name </th>
+                <th> Total </th>
             </tr>
-        {% for commit in commits %}
+        {% for variable in variables %}
             <tr>
-                <td>
-                    <a href="{{baseurl}}/commit/{{ commit.id }}">
-                        {{ commit.id }}
+                <td> {{ variable[1].id }} </td>
+                <td> 
+                    <a href="{{baseurl}}/variable/{{ variable[1].id }}">
+                        {{ variable[1].name }}
                     </a>
                 </td>
-                <td>
-                    <a href="{{baseurl}}/script/{{ commit.script.id }}">
-                        {{ commit.script.name }}
-                    </a>
-                </td>
-                <td>
-                    <a href="{{baseurl}}/user/{{ commit.user.id }}">
-                        {{ commit.user.name }}
-                    </a>
-                </td>
-                <td> {{ commit.timeadd }} </td>
+                <td> {{ variable[0] }} </td>
             </tr>
         {% endfor %}
         </table>
 
         <p>
         {% if pageid > 1 %}
-        <a href="/{{baseurl}}commit/all/{{ pageid - 1 }}">prev</a>
-        <a href="/{{baseurl}}commit/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/variable/all/{{ pageid - 1 }}">prev</a>
+        <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">next</a>
         {% else %}
-        <a href="/{{baseurl}}commit/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">next</a>
         {% endif %}
         </p>
 
     {% else %}
 
-    <p> How now, brown cow? (No more commits) </p>
+    <p> How now, brown cow? (No more variables) </p>
 
     {% endif %}
 {% endblock %}

@@ -274,8 +274,14 @@ def commits(env, pageid=None):
         ))
 
 def variables(env, pageid=None):
-    # FIXME
-    pass
+    pageid = get_pageid(pageid)
+
+    tmpl = jinjaenv.get_template('variables.html')
+
+    return str(template_render(tmpl,
+        {   'variables' : vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+            'pageid' : pageid, 'session' : env['beaker.session']}
+        ))
 
 def login(env):
     tmpl = jinjaenv.get_template('loginform.html')
