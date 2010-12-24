@@ -625,7 +625,14 @@ def signature_api_commit(env):
     if not info:
         return none
 
-    info = info[0]
+    commit = info[0]
+
+    ret = 'script: %s\n' % commit.script.name
+    ret += 'user: %s\n' % commit.user.name
+    ret += 'timeadd: %s\n' % commit.timeadd
+    ret += 'timestamp: %s\n' % commit.timestamp.ctime()
+
+    return ['text/plain', str(ret)]
 
     return repr({'script' : info.script, 'user' : info.user, 'timeadd' :
         info.timeadd, 'time' : info.timestamp.isoformat() })
