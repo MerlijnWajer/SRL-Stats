@@ -2,7 +2,6 @@ TODO:
     -   Fix bug: If a script/user has no commits, it isn't listed in the
         ``Scripts / User'' list.
     -   Require email at registration.
-    -   Finish /variable/all pages.
     -   Add optionparser for logfiles, etc.
     -   My Commits page?
     -   Customized page if you're logged in? Recent commit by you, recent
