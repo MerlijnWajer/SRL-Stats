@@ -84,7 +84,7 @@ class ScriptTool(object):
         restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1]) if time[1]
                 is not None else 0}
 
-        return dict(zip(['script', 'vars', 'time'], [script, myvars, restime]))
+        return dict(zip(['script', 'vars', 'time'], [script, my_vars, restime]))
 
     def listc(self, script, _offset=0, _limit=10):
         commits = self.s.query(Commit).join((Script,
