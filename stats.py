@@ -28,6 +28,9 @@ import re
 
 from beaker.middleware import SessionMiddleware
 
+# JSON for /api/
+import simplejson as json
+
 # Import config
 from config import BASE_URL, RESULTS_PER_PAGE, \
     session_options
@@ -598,14 +601,13 @@ def signature_api_script(env, scriptid):
     if info is None:
         return None
 
-    ret =  'commits: %d\n' % info['time']['commit_amount']
-    ret += 'time: %d\n' % info['time']['commit_time']
-    ret += 'script: %s\n' % info['script'].name
-    ret += 'owner: %s\n' % info['script'].owner.name
-    ret += 'vars:\n'
-    for x, y in info['vars']:
-        ret += '%s: %d\n' % (y, x)
-    return ['text/plain', str(ret)]
+    return ['text/plain', json.dumps({
+            'script' : info['script'].name,
+            'owner' : info['script'].owner.name,
+            'commits' : info['time']['commit_amount'],
+            'time' : info['time']['commit_time'],
+            'vars' : info['vars']
+        })]
 
     # TODO:
     # Add more info: Last commit by, Last commit on.
@@ -616,11 +618,11 @@ def signature_api_user(env, userid):
     if info is None:
         return None
 
-    ret =  'commits: %d\n' % info['time']['commit_amount']
-    ret += 'time: %d\n' % info['time']['commit_time']
-    ret += 'user: %s\n' % info['user'].name
-
-    return ['text/plain', str(ret)]
+    return ['text/plain', json.dumps({
+        'user' : info['user'].name,
+        'time' : info['time']['commit_time'],
+        'commits' : info['time']['commit_amount']
+        })]
 
     # TODO:
     # Add more info: Last commit to, Last commit on.
@@ -633,15 +635,12 @@ def signature_api_commit(env):
 
     commit = info[0]
 
-    ret = 'script: %s\n' % commit.script.name
-    ret += 'user: %s\n' % commit.user.name
-    ret += 'timeadd: %s\n' % commit.timeadd
-    ret += 'timestamp: %s\n' % commit.timestamp.ctime()
-
-    return ['text/plain', str(ret)]
-
-    return repr({'script' : info.script, 'user' : info.user, 'timeadd' :
-        info.timeadd, 'time' : info.timestamp.isoformat() })
+    return ['text/plain', json.dumps({
+        'script' : commit.script.name,
+        'user' : commit.user.name,
+        'time_added' : commit.timeadd,
+        'timestamp' : commit.timestamp.ctime()
+        })]
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
