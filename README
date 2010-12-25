@@ -1,37 +1,77 @@
+==== SRL Stats ====
+
 SRL Stats System. http://wizzup.org/stats/
 
+The SRL Stats system is a system created solely for the purpose to ``collect''
+statistics from scripts written by the SRL Community. Every user can own
+multiple scripts at the system and commit statistics to other scripts,
+not necessarily his own.
+
 If you want to run the system, you'll need the following components:
-Python (jinja2, sqlalchemy, flup (WSGIServer), matplotlib and possibly numpy)
-I used lighttpd, but apache and other should work fine too. The system uses
-WSGI/FCGI.
+Python:
+    * jinja2
+    * sqlalchemy
+    * flup (WSGIServer)
+    * matplotlib
+    * simplejson
+    * numpy
 
-This is my config:
+The system uses WSGI/FCGI.
+I used lighttpd, but apache and other should work fine too. (But I have no 
+instructions on how to set it up with apache. If you have done it please send
+in contributions to merlijn on wizzup.org)
 
-url.rewrite-once = (
-                "^/stats" => "stats.fcgi"
-        )
+==== Directories ====
+
+My folder setup:
+
+/srv/srlstats/srlstats <-- location of the sources.
+/srv/srlstats/web/ <--- location of static files
+
+==== Lighttpd Setup ====
 
 # You'll need a file called 'stats.fcgi' in your docroot and symlink it to the
 # stats.py.
 
-fastcgi.server += ( ".fcgi" =>
-  ( "statsfcgi" =>
-    (   
-        "socket"        => "/tmp/stats.sock-1",
-        "docroot"       => "/home/merlijn/srl-stats"
-    )
-  )
-)
 
-The config.py file contains the base url, you'll probably want to change this.
+# Alternatively you can do this with an url rewrite.
+$HTTP["host"] == "stats.myhost.com" {
+    # Rewrite to make it pretty. We'll also need a file stata.fcgi
+    # to prevent 404s. XXX Ugly hack <--
+    url.rewrite-once += (
+                    "^(?:(?!.*static.*)).*$" => "stats.fcgi"
+            )   
+    
+    fastcgi.server += ( ".fcgi" =>
+      ( "statsfcgi" =>
+        (   
+            "socket"        => "/tmp/stats.sock",
+            "docroot"       => "/srv/srlstats/srlstats"
+        )
+      )
+    )
+
+    server.document-root = "/srv/srlstats/web"
+}
+
+The config.py file contains the base url, you'll want to change this.
 
 Also fill in stats_credentials.py:
 
 dbu = 'statsdbuserhere'
 dbpwd = 'somepasshere'
 dwh = 'localhost'
-dbp = '5432' # psql port
+dbp = '5432' # postgresql port
 dbname = 'statsdbnamehere'
 
 And if you want to use a different database, edit sql.py appropriately. (Change
 the engine line)
+
+===== Spawn FCGI ====
+
+This is how I used it:
+www-data is lighttpd, srlstats is user for srl-stats.
+
+$ spawn-fcgi -U www-data -G www-data -u srlstats -g srlstats -d \
+/srv/srlstats/srlstats/ -f /srv/srlstats/srlstats/stats.py  -s \
+/tmp/stats.sock
