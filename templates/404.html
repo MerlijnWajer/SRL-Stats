@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}
+        404 Not Found!
+{% endblock %}
+
+{% block content %}
+        <p> We could not find the page you requested in our web space: </p>
+        {{url}}
+        <p> Click here to return <a href="{{baseurl}}">home</a>! </p>
+{% endblock %}
