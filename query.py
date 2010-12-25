@@ -38,7 +38,7 @@ class UserTool(object):
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
 
-        restime = {'commit_amount' : time[0], 'commit_time' : time[1] if time[1]
+        restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1]) if time[1]
                 is not None else 0}
 
         return dict(zip(['user', 'time'], [user, restime]))
@@ -78,7 +78,7 @@ class ScriptTool(object):
                 (Script, Commit.script_id == Script.id)).filter(
                 Script.id == sid).first()
 
-        restime = {'commit_amount' : time[0], 'commit_time' : time[1] if time[1]
+        restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1]) if time[1]
                 is not None else 0}
 
         return dict(zip(['script', 'vars', 'time'], [script, vars, restime]))
