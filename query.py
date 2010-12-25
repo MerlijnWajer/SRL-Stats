@@ -73,6 +73,9 @@ class ScriptTool(object):
                 (Variable, CommitVar.variable_id==Variable.id)).join(
                 (Commit, Commit.id == CommitVar.commit_id)).filter(
                  Commit.script_id == sid).group_by(Variable.name).all()
+    
+        my_vars = [(int(x[0], x[1]) for x in vars]
+
         time = self.s.query(func.count(Commit.timeadd), 
                 func.sum(Commit.timeadd)).join(
                 (Script, Commit.script_id == Script.id)).filter(
@@ -81,7 +84,7 @@ class ScriptTool(object):
         restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1]) if time[1]
                 is not None else 0}
 
-        return dict(zip(['script', 'vars', 'time'], [script, vars, restime]))
+        return dict(zip(['script', 'vars', 'time'], [script, myvars, restime]))
 
     def listc(self, script, _offset=0, _limit=10):
         commits = self.s.query(Commit).join((Script,
