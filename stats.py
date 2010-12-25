@@ -116,8 +116,10 @@ def stats(env, start_response):
     r = wt.apply_rule(env['REQUEST_URI'], env)
 
     if r is None:
-        start_response('404 Not Found', [('Content-Type', 'text/plain')])
-        r = '404: %s' % env['REQUEST_URI']
+        start_response('404 Not Found', [('Content-Type', 'text/html')])
+        tmpl = jinjaenv.get_template('404.html')
+
+        return str(template_render(tmpl, {'url' : env['REQUEST_URI']}, default_page=False))
     elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
         start_response('200 OK', [('Content-Type', 'image/svg+xml')])
         r = r[1]
