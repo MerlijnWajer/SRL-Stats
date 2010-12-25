@@ -74,7 +74,7 @@ class ScriptTool(object):
                 (Commit, Commit.id == CommitVar.commit_id)).filter(
                  Commit.script_id == sid).group_by(Variable.name).all()
     
-        my_vars = [(int(x[0], x[1]) for x in vars]
+        my_vars = [(int(x[0]), x[1]) for x in vars]
 
         time = self.s.query(func.count(Commit.timeadd), 
                 func.sum(Commit.timeadd)).join(
