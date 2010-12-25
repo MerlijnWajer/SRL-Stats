@@ -54,6 +54,8 @@ $HTTP["host"] == "stats.myhost.com" {
     server.document-root = "/srv/srlstats/web"
 }
 
+==== Website and Database configuration ====
+
 The config.py file contains the base url, you'll want to change this.
 
 Also fill in stats_credentials.py:
