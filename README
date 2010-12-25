@@ -36,7 +36,7 @@ My folder setup:
 
 # Alternatively you can do this with an url rewrite.
 $HTTP["host"] == "stats.myhost.com" {
-    # Rewrite to make it pretty. We'll also need a file stata.fcgi
+    # Rewrite to make it pretty. We'll also need a file stats.fcgi
     # to prevent 404s. XXX Ugly hack <--
     url.rewrite-once += (
                     "^(?:(?!.*static.*)).*$" => "stats.fcgi"
