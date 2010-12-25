@@ -633,7 +633,7 @@ def signature_api_commit(env):
     info = ct.top(_limit=1)
 
     if not info:
-        return none
+        return None
 
     commit = info[0]
 
