@@ -116,10 +116,10 @@ class ScriptTool(StatsTool):
         if script is None:
             return None
 
-        vars = self.s.query(func.sum(CommitVar.amount), Variable.name).join(
+        vars = self.s.query(func.sum(CommitVar.amount), Variable).join(
                 (Variable, CommitVar.variable_id==Variable.id)).join(
                 (Commit, Commit.id == CommitVar.commit_id)).filter(
-                 Commit.script_id == sid).group_by(Variable.name).all()
+                 Commit.script_id == sid).group_by(Variable).all()
         time = self.s.query(func.count(Commit.timeadd), 
                 func.sum(Commit.timeadd)).join(
                 (Script, Commit.script_id == Script.id)).filter(

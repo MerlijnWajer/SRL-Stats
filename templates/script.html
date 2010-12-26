@@ -15,7 +15,10 @@
         <p> Variables of this script: <p/>
         <ul>
         {% for var in vars %}
-        <li> {{ var[1] }} : {{ var[0] }}  </li>
+            <li>
+            <a href="{{baseurl}}/variable/{{ var[1].id }}">
+                {{ var[1].name }}</a> : {{ var[0] }}
+            </li>
         {% endfor %}
         </ul>
     {% endif %}
