@@ -28,7 +28,9 @@
                 ('commit/all' , 'Commits'),
                 ('variable/all' , 'Variables')
             ]: %}
-            <a href="{{baseurl}}/{{ nav }}"> {{ name }} </a>
+            <a href="{{baseurl}}/{{ nav }}">
+                {{ name }}
+            </a>
             {% endfor %}
             {% if session and session['loggedin'] %}
             <a href="{{baseurl}}/manage/scripts">
@@ -40,8 +42,12 @@
             </a>
 
             {% else %}
-            <a href="{{baseurl}}/login"> Log in </a>
-            <a href="{{baseurl}}/register"> Register </a>
+            <a href="{{baseurl}}/login">
+                Log in
+            </a>
+            <a href="{{baseurl}}/register">
+                Register
+            </a>
             {% endif %}
             <div class="clearer"><span></span></div>
         </div>
@@ -121,7 +127,8 @@
 <div class="footer">
     {% block footer %}
     <div>
-        &copy; Merlijn Wajer
+        Created by Merlijn Wajer: <a href="http://wizzup.org/stats">
+            Project Homepage </a>
     </div>
     <a href="http://www.vim.org/">
         <img src="http://www.vim.org/images/vim_created.gif"</img>

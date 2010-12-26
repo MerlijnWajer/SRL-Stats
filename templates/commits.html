@@ -31,18 +31,28 @@
                         {{ commit.user.name }}
                     </a>
                 </td>
-                <td> {{ commit.timeadd }} </td>
-                <td> {{ commit.timestamp.ctime() }} </td>
+                <td>
+                    {{ commit.timeadd }}
+                </td>
+                <td>
+                    {{ commit.timestamp.ctime() }}
+                </td>
             </tr>
         {% endfor %}
         </table>
 
         <p>
         {% if pageid > 1 %}
-        <a href="{{baseurl}}/commit/all/{{ pageid - 1 }}">prev</a>
-        <a href="{{baseurl}}/commit/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/commit/all/{{ pageid - 1 }}">
+            prev
+        </a>
+        <a href="{{baseurl}}/commit/all/{{ pageid + 1 }}">
+            next
+        </a>
         {% else %}
-        <a href="{{baseurl}}/commit/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/commit/all/{{ pageid + 1 }}">
+            next
+        </a>
         {% endif %}
         </p>
 

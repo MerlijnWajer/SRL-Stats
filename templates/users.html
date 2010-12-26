@@ -14,23 +14,33 @@
             </tr>
         {% for user in users %}
             <tr>
-                <td> {{ user[2] }} </td>
+                <td>
+                    {{ user[2] }}
+                </td>
                 <td>
                     <a href="{{baseurl}}/user/{{ user[2] }}">
                         {{ user[1] }}
                     </a>
                 </td>
-                <td> {{ user[0] }} </td>
+                <td>
+                    {{ user[0] }}
+                </td>
             </tr>
         {% endfor %}
         </table>
 
         <p>
         {% if pageid > 1 %}
-        <a href="{{baseurl}}/user/all/{{ pageid - 1 }}">prev</a>
-        <a href="{{baseurl}}/user/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/user/all/{{ pageid - 1 }}">
+            prev
+        </a>
+        <a href="{{baseurl}}/user/all/{{ pageid + 1 }}">
+            next
+        </a>
         {% else %}
-        <a href="{{baseurl}}/user/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/user/all/{{ pageid + 1 }}">
+            next
+        </a>
         {% endif %}
         </p>
 

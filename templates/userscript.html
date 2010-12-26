@@ -5,17 +5,24 @@ Statistics of commits by {{ user.name }} to {{ script.name }}
 
 {% block content %}
 
-<p> <a href="{{baseurl}}/user/{{user.id}}">{{ user.name }}</a>
-has added {{ time['commit_time'] }} minutes to
-<a href="{{baseurl}}/script/{{script.id}}">{{ script.name }}</a>
-in {{ time['commit_amount'] }}
-<a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/">
-    commits</a>.<p>
+<p>
+<a href="{{baseurl}}/user/{{user.id}}">
+    {{ user.name }}
+</a>
+    has added {{ time['commit_time'] }} minutes to
+    <a href="{{baseurl}}/script/{{script.id}}">
+        {{ script.name }}
+    </a>
+    in {{ time['commit_amount'] }}
+    <a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/">
+        commits
+    </a>.
+</p>
 
 <p> More specifically, this is how many variables he committed: </p>
 <ul>
 {% for var in vars %}
-<li> {{ var[1] }} ( {{ var[0] }} ) </li>
+    <li> {{ var[1] }} ( {{ var[0] }} ) </li>
 {% endfor %}
 </ul>
 

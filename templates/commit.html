@@ -7,14 +7,17 @@
     <h1>
         Commit by {{ commit.user.name }} to {{ commit.script.name }}
     </h1>
-    <p> Committed on: {{ commit.timestamp }} </p>
-    <ul>
-        <li> Time Committed: {{ commit.timeadd }} </li>
+    <p> Committed on: {{ commit.timestamp.ctime() }} </p>
+    <p> This commit adds {{ commit. timeadd }} minutes to 
+    <a href="{{baseurl}}/script/{{ commit.script.id }}">
+        {{ commit.script.name}}</a>.</p>
 
     {% if commit.commitvars %}
+    <ul>
         {% for cvar in commit.commitvars %}
         <li> Adds {{ cvar.amount}} of {{ cvar.variable.name }} </li>
         {% endfor %}
-    {% endif %}
     </ul>
+    {% endif %}
+
 {% endblock %}
