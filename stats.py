@@ -68,8 +68,12 @@ def template_render(template, vars, default_page=True):
 """
 /user/:id           |   User Info (Total Commits, etc) Owned Scripts
 /user/:id/commits   |   User Commits
-/user/:id/scripts   |   All scripts user committed to
 /user/all/(:pageid) |   All users. (With possible pid)
+
+/user/id:/script/:id|   User data to specific script.
+
+/user/id:/script/:id/commits/(:pageid)
+                    |   User commits to specific script.
 
 /script/:id         |   Script Info (Total Vars/Commits)
 /script/:id/commits |   Commits made to script. (list last X)
@@ -97,11 +101,12 @@ def template_render(template, vars, default_page=True):
                             |   their script. (But not create not vars, nor
                             |   delete vars from their script)
 
-TODO:
-Add /:format?
-/api/scriptinfo/:id
-/api/userinfo/:id
+/api/script/:id             |   Get script info in JSON
+/api/user/:id               |   Get user info in JSON
+/api/commit/last            |   Get last commit info in JSON
 
+TODO
+/user/:id/scripts   |   All scripts user committed to
 /manage/variables           |   Add variables to the system.
 
 /manage/commits/            |   For admins? Delete commits?
@@ -152,8 +157,8 @@ def user(env, userid=None):
         return None
 
     return str(template_render(tmpl,
-        {   'ttc' : uinfo['time']['commit_amount'],
-            'tc' : uinfo['time']['commit_time'],
+        {   'ttc' : uinfo['time']['commit_time'],
+            'tc' : uinfo['time']['commit_amount'],
             'user' : uinfo['user'], 'session' : env['beaker.session'] }
         ))
 
@@ -178,8 +183,8 @@ def script(env, scriptid=None):
         return None
 
     return str(template_render(tmpl,
-        {   'ttc' : sinfo['time']['commit_amount'],
-            'tc' :  sinfo['time']['commit_time'],
+        {   'ttc' : sinfo['time']['commit_time'],
+            'tc' :  sinfo['time']['commit_amount'],
             'script' : sinfo['script'], 'vars' : sinfo['vars'],
             'session' : env['beaker.session']
         }
@@ -446,11 +451,7 @@ def api_commit(env):
 
     vars = dict()
 
-    # TODO: Query random vars
-    # random_vars = 
-
     for x, y in data.iteritems():
-        # TODO: Randoms are always allowed
         x = x.lower()
         if x not in script_vars:
             return '140'
@@ -632,12 +633,21 @@ def signature_api_script(env, scriptid):
     if info is None:
         return None
 
+    last_commit = st.listc(info['script'], _limit=1)
+
+    if last_commit and len(last_commit):
+        last_commit = last_commit[0]
+
     return ['text/plain', json.dumps({
             'script' : info['script'].name,
             'owner' : info['script'].owner.name,
             'commits' : info['time']['commit_amount'],
             'time' : info['time']['commit_time'],
-            'vars' : info['vars']
+            'vars' : info['vars'],
+            'last_commit_on:' : last_commit.timestamp.ctime() if last_commit else
+            None,
+            'last_commit_by:' : last_commit.user.name if last_commit else
+            None
         })]
 
     # TODO:

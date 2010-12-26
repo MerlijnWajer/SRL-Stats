@@ -2,18 +2,19 @@
 from sqlalchemy import *
 from classes import User, Script, Variable, Commit, CommitVar, Base
 
-class UserTool(object):
+class StatsTool(object):
+    def __init__(self, sell):
+        """
+            We need a SQLAlchemy session.
+        """
+        self.s = sell
+
+class UserTool(StatsTool):
     """
         UserTool is a User helper class. It doesn't have to be OOP; and OOP
         may be dropped later on depending whether I still plan to make a 
         caching mechanism or not.
     """
-
-    def __init__(self, sess):
-        """
-            We need a SQLAlchemy session.
-        """
-        self.s = sess
 
     def top(self, _offset=0,_limit=10):
         """
@@ -44,6 +45,10 @@ class UserTool(object):
         return dict(zip(['user', 'time'], [user, restime]))
 
     def info_script(self, uid, sid):
+        """
+            Returns the user object, script object, time statistics and
+            variables commits by the user with their amount.
+        """
         user = self.s.query(User).filter(User.id == uid).first()
         if user is None:
             return None
@@ -69,7 +74,7 @@ class UserTool(object):
         
     def listc_script(self, uid, sid, _offset=0, _limit=10):
         """
-            Return the commits made by user.
+            Return the commits made by user to a specific script.
         """
         user = self.s.query(User).filter(User.id == uid).first()
         if user is None:
@@ -98,10 +103,7 @@ class UserTool(object):
                     _offset).limit(_limit).all()
         return commits
 
-class ScriptTool(object):
-
-    def __init__(self, sess):
-        self.s = sess
+class ScriptTool(StatsTool):
 
     def top(self, _offset=0, _limit=10):
         return self.s.query(func.sum(Commit.timeadd), Script.name, Script.id) \
@@ -135,10 +137,7 @@ class ScriptTool(object):
                             _offset).limit(_limit).all()
         return commits
 
-class CommitTool(object):
-
-    def __init__(self, sess):
-        self.s = sess
+class CommitTool(StatsTool):
 
     def top(self, _offset=0, _limit=10):
         return self.s.query(Commit).order_by(desc(Commit.id)).offset(
@@ -148,6 +147,9 @@ class CommitTool(object):
         return self.s.query(Commit).filter(Commit.id == cid).first()
 
     def add(self, user, script, time, vars):
+        """
+            Add a commit to the system.
+        """
         c = Commit(time)
 
         c.user = user
@@ -167,13 +169,11 @@ class CommitTool(object):
         self.s.add(c)
 
         self.s.commit()
+        # XXX: Failsafe?
 
         return True
 
-class VariableTool(object):
-
-    def __init__(self, sess):
-        self.s = sess
+class VariableTool(StatsTool):
 
     def top(self, _offset=0, _limit=10, only_vars=False):
         obj = self.s.query(func.sum(CommitVar.amount), Variable).join(
