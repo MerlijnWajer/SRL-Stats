@@ -208,7 +208,7 @@ def script_graph(env, scriptid=None):
     if sinfo is None:
         return None
 #
-    vars = sinfo['vars']
+    vars = [(x[0], x[1].name) for x in sinfo['vars']]
     script = sinfo['script']
 #    from sqlalchemy import func
 #    vars = session.query(Script.name, User.name,
@@ -637,6 +637,8 @@ def signature_api_script(env, scriptid):
 
     if last_commit and len(last_commit):
         last_commit = last_commit[0]
+
+    info['vars'] = [(x[0], x[1].name) for x in info['vars']]
 
     return ['text/plain', json.dumps({
             'script' : info['script'].name,
