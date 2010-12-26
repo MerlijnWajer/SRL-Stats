@@ -16,16 +16,21 @@
             </tr>
         {% for commit in commits %}
             <tr>
-                <td> <a href="{{baseurl}}/commit/{{ commit.id }}">
-                        {{ commit.id }} </a> </td>
-                <td> {{ commit.timeadd }} </td>
+                <td>
+                    <a href="{{baseurl}}/commit/{{ commit.id }}">
+                        {{ commit.id }}
+                    </a>
+                </td>
+                <td>
+                    {{ commit.timeadd }}
+                </td>
                 <td>
                 <a href="{{baseurl}}/script/{{ commit.script.id }}">
-                {{ commit.script.name }}</a>
+                    {{ commit.script.name }}
+                </a>
                 <a href="{{baseurl}}/user/{{user.id}}/script/{{commit.script.id}}">
                     (commits by user)
                 </a>
-
                 </td>
             </tr>
         {% endfor %}
@@ -33,10 +38,16 @@
 
         <p>
         {% if pageid > 1 %}
-        <a href="{{baseurl}}/user/{{user.id}}/commits/{{ pageid - 1 }}">prev</a>
-        <a href="{{baseurl}}/user/{{user.id}}/commits/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/user/{{user.id}}/commits/{{ pageid - 1 }}">
+            prev
+        </a>
+        <a href="{{baseurl}}/user/{{user.id}}/commits/{{ pageid + 1 }}">
+            next
+        </a>
         {% else %}
-        <a href="{{baseurl}}/user/{{user.id}}/commits/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/user/{{user.id}}/commits/{{ pageid + 1 }}">
+            next
+        </a>
         {% endif %}
         </p>
 

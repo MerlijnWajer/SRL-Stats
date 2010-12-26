@@ -7,5 +7,20 @@
     <h1>
         Variable: {{ variable.name }}
     </h1>
-    <p> Amount: {{ amount }} </p>
+    <p> Total: {{ amount }} </p>
+
+    {% if variable.scripts %}
+    <p> The following script use this variable: </p>
+    <ul>
+        {% for script in variable.scripts %}
+        <li>
+            <a href="{{baseurl}}/script/{{script.id}}">
+                {{ script.name }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+
+    {% endif %}
 {% endblock %}

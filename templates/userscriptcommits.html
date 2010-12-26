@@ -27,10 +27,16 @@
 
         <p>
         {% if pageid > 1 %}
-        <a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/{{ pageid - 1 }}">prev</a>
-        <a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/{{ pageid - 1 }}">
+            prev
+        </a>
+        <a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/{{ pageid + 1 }}">
+            next
+        </a>
         {% else %}
-        <a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/user/{{user.id}}/script/{{script.id}}/commits/{{ pageid + 1 }}">
+            next
+        </a>
         {% endif %}
         </p>
 

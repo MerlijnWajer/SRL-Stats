@@ -7,12 +7,12 @@
     <h1>
         {{ script.name }}
     </h1>
-    <p> Total Time Committed: 
-        {{ _import['datetime'].timedelta(minutes=ttc) }}
+    <p> {{ script.name }} has total running time of
+    {{ _import['datetime'].timedelta(minutes=ttc) }}
+    with {{ tc }} individual commits.
     </p>
-    <p> Total Commits: {{ tc }} </p>
     {% if vars %}
-        <p> Vars: <p/>
+        <p> Variables of this script: <p/>
         <ul>
         {% for var in vars %}
         <li> {{ var[1] }} : {{ var[0] }}  </li>

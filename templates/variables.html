@@ -14,23 +14,33 @@
             </tr>
         {% for variable in variables %}
             <tr>
-                <td> {{ variable[1].id }} </td>
+                <td>
+                    {{ variable[1].id }}
+                </td>
                 <td> 
                     <a href="{{baseurl}}/variable/{{ variable[1].id }}">
                         {{ variable[1].name }}
                     </a>
                 </td>
-                <td> {{ variable[0] }} </td>
+                <td>
+                    {{ variable[0] }}
+                </td>
             </tr>
         {% endfor %}
         </table>
 
         <p>
         {% if pageid > 1 %}
-        <a href="{{baseurl}}/variable/all/{{ pageid - 1 }}">prev</a>
-        <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/variable/all/{{ pageid - 1 }}">
+            prev
+        </a>
+        <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">
+            next
+        </a>
         {% else %}
-        <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">next</a>
+        <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">
+            next
+        </a>
         {% endif %}
         </p>
 

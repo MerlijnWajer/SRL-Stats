@@ -5,12 +5,11 @@
 
 {% block content %}
     <h1>
-        {{ user.name }}
+        User: {{ user.name }}
     </h1>
-    <p> Total Time Committed: 
-        {{ _import['datetime'].timedelta(minutes=ttc) }}
-    </p>
-    <p> Total Commits: {{ tc }} </p>
+    <p>{{ user.name}} has committed a total time of 
+    {{ _import['datetime'].timedelta(minutes=ttc) }}
+    in {{ tc }} commits. </p>
     {% if user.scripts %}
         <p> Scripts: <p/>
         <ul>
@@ -21,7 +20,14 @@
         </a></li>
         {% endfor %}
         </ul>
+    {% else %}
+    <p> {{ user.name }} does not own any scripts. </p>
     {% endif %}
 
-    <a href="{{baseurl}}/user/{{user.id}}/commits"> Commits by this user </a>
+    <p>
+    You can view all the commits of this user 
+        <a href="{{baseurl}}/user/{{user.id}}/commits">
+            here
+        </a>
+    </p>.
 {% endblock %}
