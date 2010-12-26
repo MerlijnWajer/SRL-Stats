@@ -67,6 +67,26 @@ class UserTool(object):
         return dict(zip(['user', 'script', 'vars', 'time'], [user, script, \
                 vars, restime]))
         
+    def listc_script(self, uid, sid, _offset=0, _limit=10):
+        """
+            Return the commits made by user.
+        """
+        user = self.s.query(User).filter(User.id == uid).first()
+        if user is None:
+            return None
+
+        script = self.s.query(Script).filter(Script.id == sid).first()
+        if script is None:
+            return None
+
+        commits = self.s.query(Commit).join(
+            (User, User.id==Commit.user_id)).filter(
+                User.id == uid).filter(
+                Commit.script_id == sid).order_by(
+                desc(Commit.id)).offset(
+                _offset).limit(_limit).all()
+
+        return dict(user=user, script=script,commits=commits)
 
     def listc(self, user, _offset=0, _limit=10):
         """
