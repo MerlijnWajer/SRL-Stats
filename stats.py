@@ -644,14 +644,11 @@ def signature_api_script(env, scriptid):
             'commits' : info['time']['commit_amount'],
             'time' : info['time']['commit_time'],
             'vars' : info['vars'],
-            'last_commit_on:' : last_commit.timestamp.ctime() if last_commit else
-            None,
+            'last_commit_on:' : last_commit.timestamp.ctime() if last_commit
+                else None,
             'last_commit_by:' : last_commit.user.name if last_commit else
-            None
-        })]
-
-    # TODO:
-    # Add more info: Last commit by, Last commit on.
+                None
+        }, indent=' ' * 4)]
 
 def signature_api_user(env, userid):
     info = ut.info(userid)
@@ -659,14 +656,20 @@ def signature_api_user(env, userid):
     if info is None:
         return None
 
-    return ['text/plain', json.dumps({
-        'user' : info['user'].name,
-        'time' : info['time']['commit_time'],
-        'commits' : info['time']['commit_amount']
-        })]
+    last_commit = ut.listc(info['user'], _limit=1)
 
-    # TODO:
-    # Add more info: Last commit to, Last commit on.
+    if last_commit and len(last_commit):
+        last_commit = last_commit[0]
+
+    return ['text/plain', json.dumps({
+            'user' : info['user'].name,
+            'time' : info['time']['commit_time'],
+            'commits' : info['time']['commit_amount'],
+            'last_commit_on:' : last_commit.timestamp.ctime() if last_commit
+                else None,
+            'last_commit_to:' : last_commit.script.name if last_commit
+                else None
+        }, indent=' ' * 4)]
 
 def signature_api_commit(env):
     info = ct.top(_limit=1)
@@ -681,7 +684,7 @@ def signature_api_commit(env):
         'user' : commit.user.name,
         'time_added' : commit.timeadd,
         'timestamp' : commit.timestamp.ctime()
-        })]
+        }, indent=' ' * 4)]
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
