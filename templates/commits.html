@@ -12,6 +12,7 @@
                 <th> Script Name </th>
                 <th> User Name </th>
                 <th> Time (Minutes) </th>
+                <th> Submitted </th>
             </tr>
         {% for commit in commits %}
             <tr>
@@ -31,6 +32,7 @@
                     </a>
                 </td>
                 <td> {{ commit.timeadd }} </td>
+                <td> {{ commit.timestamp.ctime() }} </td>
             </tr>
         {% endfor %}
         </table>

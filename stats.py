@@ -302,10 +302,19 @@ def user_script_stats(env, userid, scriptid):
         'vars' : data['vars'],
         'session' : env['beaker.session']}))
 
+def user_script_commits(env, userid, scriptid, pageid):
+    pageid = get_pageid(pageid)
+    data = ut.listc_script(userid, scriptid,(pageid-1)*RESULTS_PER_PAGE,
+            RESULTS_PER_PAGE)
 
-    pass
+    tmpl = jinjaenv.get_template('userscriptcommits.html')
 
-def user_script_commits(env, userid, scriptid):
+    return str(template_render(tmpl, {
+        'user' : data['user'],
+        'script' : data['script'],
+        'commits' : data['commits'],
+        'pageid' : pageid, 'session' : env['beaker.session']}
+        ))
     pass
 
 def login(env):
