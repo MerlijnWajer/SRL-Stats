@@ -9,7 +9,10 @@
     {% if registersuccess %}
         <p> You are now registered. </p>
     {% elif registerfail %} 
-        <p> Invalid username or password. </p>
+        <p> Invalid username or password. (Either it doesn't comply with the
+        requirements below, or the username already exists)
+        Specific error: </p>
+        <ul><li> {{ error }} </li></ul>
     {% else %}
         <form method="post" action="{{baseurl}}/register">
             <p>
@@ -17,9 +20,16 @@
             </p>
             <p>
                 Only Alpha Numeric characters (0-9, A-z) and spaces are allowed.
+                Username and password both have a limit of 20 characters.
+                Mail is limited to 40 characters and also allows the characters
+                email addresses can contain.
             </p>
-            <h2>User:  <input type="text" name="user"></input> </h2>
-            <h2>Pass:  <input type="password" name="pass"></input> </h2>
+            <h2>User: <br/>
+                <input type="text" name="user"></input> </h2>
+            <h2>Pass: <br/>
+                <input type="password" name="pass"></input> </h2>
+            <h2>Mail (optional): <br/>
+                <input type="text" name="mail"></input> </h2>
             <br/>
             <input type="submit" value="Register"> </input>
         </form>
