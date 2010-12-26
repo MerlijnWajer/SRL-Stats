@@ -26,6 +26,9 @@ import datetime
 # For regex
 import re
 
+# For password hashes
+import hashlib
+
 from beaker.middleware import SessionMiddleware
 
 # JSON for /api/
@@ -44,6 +47,7 @@ LVL_VERBOSE = 666       # Verbose information. This should be everything except
 
 # We use this to check input for sanity.
 alphanumspace = re.compile('^[0-9,A-z, ]+$')
+emailre = re.compile('^[A-z,0-9,\._-]+@[A-z0-9.-]+\.[A-z]{2,6}$')
 
 def get_pageid(pageid):
     try:
@@ -346,7 +350,9 @@ def login(env):
             return str(template_render(tmpl,
             {   'session' : env['beaker.session'], 'loginfail' : True}  ))
 
-        # Does the user exist?
+        data['pass'] = hashlib.sha256(data['pass']).hexdigest()
+
+        # Does the user exist (and is the password valid)?
         res =  session.query(User).filter(User.name ==
                 data['user']).filter(User.password == data['pass']).first()
 
@@ -596,24 +602,58 @@ def register_user(env):
 
         if 'user' not in data or 'pass' not in data:
             return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'registerfail' : True}  ))
+            {   'session' : env['beaker.session'], 'registerfail' : True,
+                'error' : 'Post data not complete'}  ))
 
         data['user'] = data['user'].replace('+', ' ')
         data['pass'] = data['pass'].replace('+', ' ')
+        if 'mail' in data:
+            data['mail'] = data['mail'].replace('%40', '@')
+
+        if len(data['user']) > 20 or len(data['pass']) > 20:
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'registerfail' : True,
+                'error' : 'Username or Password too long.'}  ))
+
+        data['pass'] = hashlib.sha256(data['pass']).hexdigest()
+
+        if 'mail' in data:
+            if len(data['mail']) > 40:
+                return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'registerfail' : True,
+                'error' : 'Email address is too long'} ))
+
+        log.log([], LVL_VERBOSE, PyLogger.INFO, 'Register POST data: %s' %
+                str(data))
 
         if not alphanumspace.match(data['user']):
             return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'registerfail' : True}  ))
+            {   'session' : env['beaker.session'], 'registerfail' : True,
+                'error' : 'Username contains invalid characters'}  ))
 
         if not alphanumspace.match(data['pass']):
             return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'registerfail' : True}  ))
+            {   'session' : env['beaker.session'], 'registerfail' : True,
+                'error' : 'Password contains invalid characters'}  ))
+
+        if 'mail' in data:
+            if not emailre.match(data['mail']):
+                return str(template_render(tmpl,
+                {   'session' : env['beaker.session'], 'registerfail' : True,
+                    'error': 'Invalid Email.'}  ))
 
         # Does the user exist?
         res =  session.query(User).filter(User.name ==
                 data['user']).filter(User.password == data['pass']).first()
 
-        user = User(data['user'], data['pass'])
+        if res:
+            return str(template_render(tmpl,
+            {   'session' : env['beaker.session'], 'registerfail' : True,
+                'error' : 'Username already exists'}  ))
+
+
+        user = User(data['user'], data['pass'], data['mail'] if 'mail' in data
+                else None)
 
         session.add(user)
         session.commit()

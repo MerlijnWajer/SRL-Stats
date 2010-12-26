@@ -25,14 +25,16 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
-    password = Column(String(32), nullable=False)
+    password = Column(String(64), nullable=False)
+    mail = Column(String(40), nullable=True)
     registertime = Column(DateTime, default=func.now())
     # scripts = user owned scripts
     # commits = user owned commits
 
-    def __init__(self, name, password):
+    def __init__(self, name, password, mail=None):
         self.name = name
         self.password = password
+        self.mail = mail
 
     def __repr__(self):
         return 'User(%s)' % self.name
