@@ -18,7 +18,7 @@
 <h2> Add variable: </h2>
 
 {% if vars %}
-    <form method="post" action="/stats/manage/script/{{ script.id }}">
+    <form method="post" action="{{baseurl}}/manage/script/{{ script.id }}">
     <select name="variable">
 
     {% for v in vars %}
