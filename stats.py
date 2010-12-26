@@ -474,12 +474,6 @@ def api_commit(env):
 
     return '100'
 
-def api_scriptinfo(env):
-    pass
-
-def api_userinfo(env):
-    pass
-
 def manage_scripts(env):
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
@@ -636,7 +630,7 @@ def register_user(env):
             {   'session' : env['beaker.session'], 'registerfail' : True,
                 'error' : 'Password contains invalid characters'}  ))
 
-        if 'mail' in data:
+        if 'mail' in data and data['mail']:
             if not emailre.match(data['mail']):
                 return str(template_render(tmpl,
                 {   'session' : env['beaker.session'], 'registerfail' : True,

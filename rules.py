@@ -81,12 +81,6 @@ wt.add_rule(re.compile('^%s/register$' % BASE_URL), register_user, [])
 
 wt.add_rule(re.compile('^%s/api/commit$' % BASE_URL), api_commit, [])
 
-wt.add_rule(re.compile('^%s/api/si/([0-9]{1-6})$' % BASE_URL),
-        api_scriptinfo, [])
-
-wt.add_rule(re.compile('^%s/api/ui/([0-9]{1-6})$' % BASE_URL),
-        api_userinfo, [])
-
 wt.add_rule(re.compile('^%s/manage/scripts$' % BASE_URL), manage_scripts, [])
 wt.add_rule(re.compile('^%s/manage/script/([0-9]{1,6})$' % BASE_URL),
     manage_script, ['scriptid'])
