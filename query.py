@@ -38,8 +38,8 @@ class UserTool(object):
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
 
-        restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1]) if time[1]
-                is not None else 0}
+        restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1])
+                if time[1] is not None else 0}
 
         return dict(zip(['user', 'time'], [user, restime]))
 
@@ -61,11 +61,13 @@ class UserTool(object):
             (Commit, Commit.id == CommitVar.commit_id)).filter(Commit.user_id ==
                 uid).filter(Commit.script_id == sid).group_by(Variable.name).all()
 
-        restime = {'commit_amount' : time[0], 'commit_time' : time[1] if time[1]
-                is not None else 0}
+        my_vars = [(int(x[0]), x[1]) for x in vars]
+
+        restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1])
+                if time[1] is not None else 0}
 
         return dict(zip(['user', 'script', 'vars', 'time'], [user, script, \
-                vars, restime]))
+                my_vars, restime]))
         
 
     def listc(self, user, _offset=0, _limit=10):
