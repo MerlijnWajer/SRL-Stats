@@ -743,9 +743,9 @@ if __name__ == '__main__':
 
     verbosity = LVL_VERBOSE
 
-    log.assign_logfile('/tmp/stats.log', verbosity, (PyLogger.WARNING,
+    log.assign_logfile('/dev/null', verbosity, (PyLogger.WARNING,
         PyLogger.INFO))
-    log.assign_logfile('/tmp/stats.err', verbosity, (PyLogger.ERROR,))
+    log.assign_logfile('/dev/null', verbosity, (PyLogger.ERROR,))
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Starting the SRL-Stats server')
 
     # Add all rules
