@@ -10,7 +10,7 @@ sl = session.query(Script).all()
 for i in range(100):
     u = ul[randrange(0, len(ul))]
     s = sl[randrange(0, len(sl))]
-    sv = s.variables
+    sv = s.variables + session.query(Variable).filter(Variable.is_var==0).all()
     c = Commit(randrange(5, 30))
     c.script = s 
     c.user = u
