@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}
+Statistics of commits by {{ user.name }} to {{ script.name }}
+{% endblock %}
+
+{% block content %}
+
+<p> <a href="{{baseurl}}/user/{{user.id}}">{{ user.name }}</a>
+has added {{ time['commit_time'] }} minutes to
+<a href="{{baseurl}}/script/{{script.id}}">{{ script.name }}</a>
+in {{ time['commit_amount'] }} commits. <p>
+
+<p> More specifically, this is how many variables he committed: </p>
+<ul>
+{% for var in vars %}
+<li> {{ var[1] }} ( {{ var[0] }} ) </li>
+{% endfor %}
+</ul>
+
+{% endblock %}

@@ -18,6 +18,13 @@ wt.add_rule(re.compile('^%s/user/([0-9]{1,6})/commits$' \
 wt.add_rule(re.compile('^%s/user/([0-9]{1,6})/commits/([0-9]{1,6})?$' \
         % BASE_URL), user_commit, ['userid', 'pageid'])
 
+wt.add_rule(re.compile('^%s/user/([0-9]{1,6})/script/([0-9]{1,6})$' \
+        % BASE_URL), user_script_stats, ['userid', 'scriptid'])
+
+wt.add_rule(re.compile(
+    '^%s/user/([0-9]{1,6})/script/([0-9]{1,6})/commits/([0-9]{1,6})?$' \
+        % BASE_URL), user_script_commits, ['userid', 'scriptid', 'pageid'])
+
 # Two rules. We don't want to match /user/all10
 wt.add_rule(re.compile('^%s/user/all/?$' % BASE_URL),
         users, [])

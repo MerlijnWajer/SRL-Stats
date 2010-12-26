@@ -43,6 +43,31 @@ class UserTool(object):
 
         return dict(zip(['user', 'time'], [user, restime]))
 
+    def info_script(self, uid, sid):
+        user = self.s.query(User).filter(User.id == uid).first()
+        if user is None:
+            return None
+
+        script = self.s.query(Script).filter(Script.id == sid).first()
+        if script is None:
+            return None
+
+        time = self.s.query(func.count(Commit.timeadd),
+                func.sum(Commit.timeadd)).filter(Commit.user_id == uid).filter(
+                        Commit.script_id == sid).first()
+
+        vars = self.s.query(func.sum(CommitVar.amount), Variable.name).join(
+            (Variable, CommitVar.variable_id == Variable.id)).join(
+            (Commit, Commit.id == CommitVar.commit_id)).filter(Commit.user_id ==
+                uid).filter(Commit.script_id == sid).group_by(Variable.name).all()
+
+        restime = {'commit_amount' : time[0], 'commit_time' : time[1] if time[1]
+                is not None else 0}
+
+        return dict(zip(['user', 'script', 'vars', 'time'], [user, script, \
+                vars, restime]))
+        
+
     def listc(self, user, _offset=0, _limit=10):
         """
             Return the commits made by user.
