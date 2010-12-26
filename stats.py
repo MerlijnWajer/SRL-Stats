@@ -288,6 +288,26 @@ def variables(env, pageid=None):
             'pageid' : pageid, 'session' : env['beaker.session']}
         ))
 
+def user_script_stats(env, userid, scriptid):
+    data = ut.info_script(userid, scriptid)
+    if data is None:
+        return None
+
+    tmpl = jinjaenv.get_template('userscript.html')
+
+    return str(template_render(tmpl, {
+        'user' : data['user'],
+        'script' : data['script'],
+        'time' : data['time'],
+        'vars' : data['vars'],
+        'session' : env['beaker.session']}))
+
+
+    pass
+
+def user_script_commits(env, userid, scriptid):
+    pass
+
 def login(env):
     tmpl = jinjaenv.get_template('loginform.html')
 
