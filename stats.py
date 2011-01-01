@@ -417,6 +417,8 @@ def api_commit(env):
     if not alphanumspace.match(data['password']):
         return '110'
 
+    data['password'] = hashlib.sha256(data['password']).hexdigest()
+
     user = session.query(User).filter(User.name == data['user']).filter(
             User.password == data['password']).first()
     if not user:
