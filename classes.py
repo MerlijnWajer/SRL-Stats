@@ -28,6 +28,7 @@ class User(Base):
     password = Column(String(64), nullable=False)
     mail = Column(String(40), nullable=True)
     registertime = Column(DateTime, default=func.now())
+    admin_level = Column(Integer, default=0)
     # scripts = user owned scripts
     # commits = user owned commits
 
