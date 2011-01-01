@@ -12,18 +12,18 @@
                 <th> User Name </th>
                 <th> Total Time (Minutes) </th>
             </tr>
-        {% for user in users %}
+        {% for user, utime in users %}
             <tr>
                 <td>
-                    {{ user[2] }}
+                    {{ user.id }}
                 </td>
                 <td>
-                    <a href="{{baseurl}}/user/{{ user[2] }}">
-                        {{ user[1] }}
+                    <a href="{{baseurl}}/user/{{ user.id }}">
+                        {{ user.name }}
                     </a>
                 </td>
                 <td>
-                    {{ user[0] }}
+                    {{ utime }}
                 </td>
             </tr>
         {% endfor %}

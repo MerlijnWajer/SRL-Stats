@@ -100,7 +100,7 @@
             {% if topvars %}
             <h1>Top Variables</h1>
             <ul>
-                {% for amount, variable in topvars : %}
+                {% for variable, amount in topvars : %}
                 <li>
                 <a href="{{baseurl}}/variable/{{ variable.id }}">
                     {{ variable.name }} ({{ amount }})

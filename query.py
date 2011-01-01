@@ -20,9 +20,10 @@ class UserTool(StatsTool):
         """
             Return the top *limit* users based on time added.
         """
-        return self.s.query(func.sum(Commit.timeadd), User.name, User.id).join(
-            (User, Commit.user_id == User.id)).group_by(
-             User.name, User.id).order_by(desc('sum_1')).offset(
+        return self.s.query(User, func.coalesce(func.sum(Commit.timeadd),
+            literal_column('0'))).outerjoin(
+            (Commit, Commit.user_id == User.id)).group_by(
+             User).order_by(desc('coalesce_1')).offset(
                      _offset).limit(_limit).all()
 
     def info(self, uid):
@@ -106,9 +107,10 @@ class UserTool(StatsTool):
 class ScriptTool(StatsTool):
 
     def top(self, _offset=0, _limit=10):
-        return self.s.query(func.sum(Commit.timeadd), Script.name, Script.id) \
-            .join((Script, Commit.script_id == Script.id)).group_by(
-             Script.name, Script.id).order_by(desc('sum_1')).offset(
+        return self.s.query(Script.name, Script.id, func.coalesce(
+            func.sum(Commit.timeadd), literal_column('0'))).outerjoin(
+                (Commit, Commit.script_id == Script.id)).group_by(
+             Script.name, Script.id).order_by(desc('coalesce_1')).offset(
                      _offset).limit(_limit).all()
 
     def info(self, sid):
@@ -176,11 +178,12 @@ class CommitTool(StatsTool):
 class VariableTool(StatsTool):
 
     def top(self, _offset=0, _limit=10, only_vars=False):
-        obj = self.s.query(func.sum(CommitVar.amount), Variable).join(
-                (Variable, Variable.id == CommitVar.variable_id))
+        obj = self.s.query(Variable, func.coalesce(func.sum(CommitVar.amount),
+            literal_column('0'))).outerjoin(
+                (CommitVar, Variable.id == CommitVar.variable_id))
         if only_vars:
             obj = obj.filter(Variable.is_var==1)
-        obj = obj.group_by(Variable).order_by(desc('sum_1')).offset(
+        obj = obj.group_by(Variable).order_by(desc('coalesce_1')).offset(
                          _offset).limit(_limit)
         return obj.all()
 

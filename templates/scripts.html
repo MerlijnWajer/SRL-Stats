@@ -15,15 +15,15 @@
         {% for script in scripts %}
             <tr>
                 <td>
-                    {{ script[2] }}
+                    {{ script[1] }}
                 </td>
                 <td> 
-                    <a href="{{baseurl}}/script/{{ script[2] }}">
-                        {{ script[1] }}
+                    <a href="{{baseurl}}/script/{{ script[1] }}">
+                        {{ script[0] }}
                     </a>
                 </td>
                 <td>
-                    {{ script[0] }}
+                    {{ script[2] }}
                 </td>
             </tr>
         {% endfor %}
