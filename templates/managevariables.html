@@ -30,14 +30,14 @@
 
     <p>
     {% if pageid > 1 %}
-    <a href="{{baseurl}}/variable/all/{{ pageid - 1 }}">
+    <a href="{{baseurl}}/manage/variables{{ pageid - 1 }}">
         prev
     </a>
-    <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">
+    <a href="{{baseurl}}/manage/variables{{ pageid + 1 }}">
         next
     </a>
     {% else %}
-    <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">
+    <a href="{{baseurl}}/manage/variables/{{ pageid + 1 }}">
         next
     </a>
     {% endif %}
