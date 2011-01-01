@@ -496,6 +496,12 @@ def manage_script(env, scriptid):
         return str(template_render(tmpl,
             {   'session' : env['beaker.session']}  ))
 
+    user = session.query(User).filter(User.id == \
+            env['beaker.session']['loggedin_id']).first()
+
+    if not user:
+        return None
+
     script = session.query(Script).filter(Script.id == scriptid).first()
     
     if not script:
@@ -541,47 +547,108 @@ def create_script(env):
         return str(template_render(tmpl,
             {   'session' : env['beaker.session']}  ))
 
+    user = session.query(User).filter(User.id == \
+            env['beaker.session']['loggedin_id']).first()
+
+    if not user:
+        return None
+
     tmpl = jinjaenv.get_template('createscript.html')
 
     if str(env['REQUEST_METHOD']) == 'POST':
-            data = read_post_data(env)
-            if data is None:
-                return str('Error: Invalid POST data')
+        data = read_post_data(env)
+        if data is None:
+            return str('Error: Invalid POST data')
 
-            if 'script' in data:
-                s = data['script']
-                s = urllib.unquote_plus(s)
-            else:
-                return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                    'error' : 'Error: Script contains invalid characters'}))
-
-            res = session.query(Script).filter(Script.name == s).all()
-            if res:
-                return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                    'error' : 'Error: Script already exists'}))
-
-            user = session.query(User).filter(User.id == \
-                    env['beaker.session']['loggedin_id']).first()
-
-            if not user:
-                return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                    'error' : 'Error: Invalid user in session?'}))
-
-            script = Script(s)
-            script.owner = user
-
-            session.add(script)
-            session.commit()
-
+        if 'script' in data:
+            s = data['script']
+            s = urllib.unquote_plus(s)
+        else:
             return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                  'newscript' : script }))
+                'error' : 'Error: Script contains invalid characters'}))
+
+        if len(s) == 0 or len(s) > 20:
+            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Script name has invalid length'}))
+
+        res = session.query(Script).filter(Script.name == s).all()
+        if res:
+            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Script already exists'}))
+
+        user = session.query(User).filter(User.id == \
+                env['beaker.session']['loggedin_id']).first()
+
+        if not user:
+            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Invalid user in session?'}))
+
+        script = Script(s)
+        script.owner = user
+
+        session.add(script)
+        session.commit()
+
+        return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+              'newscript' : script }))
 
     return str(template_render(tmpl,
         { 'session' : env ['beaker.session']
             }))
 
 def create_variable(env):
-    pass
+    if not loggedin(env):
+        tmpl = jinjaenv.get_template('loginform.html')
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']} ))
+
+    user = session.query(User).filter(User.id == \
+            env['beaker.session']['loggedin_id']).first()
+
+    if not user:
+        return None
+
+    tmpl = jinjaenv.get_template('createvariable.html')
+
+    if str(env['REQUEST_METHOD']) == 'POST':
+        data = read_post_data(env)
+        if data is None:
+            return str('Error: Invalid POST data')
+
+        if 'variable' in data:
+            s = data['variable']
+            s = urllib.unquote_plus(s)
+        else:
+            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Variable name not specified'}))
+
+        if len(s) == 0 or len(s) > 20:
+            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Variable name has invalid length'}))
+
+        # is 'on' when checked; not in data when not clicked. XXX
+        if 'is_var' in data:
+            v = 1
+        else:
+            v = 0
+
+        res = session.query(Variable).filter(Variable.name ==
+            s).first()
+
+        if res:
+            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Variable already exists'}))
+
+        variable = Variable(s, v)
+        session.add(variable)
+        session.commit()
+
+        return str(template_render(tmpl, { 'session' : env ['beaker.session'],
+              'newvariable' : variable}))
+
+
+    return str(template_render(tmpl,
+        {'session' : env['beaker.session'] }))
 
 def manage_variable(env, variableid):
     if not loggedin(env):
@@ -589,8 +656,14 @@ def manage_variable(env, variableid):
         return str(template_render(tmpl,
             {   'session' : env['beaker.session']} ))
 
-    tmpl = jinjaenv.get_template('managevariable.html')
+    user = session.query(User).filter(User.id == \
+            env['beaker.session']['loggedin_id']).first()
+
+    if not user:
+        return None
     
+    tmpl = jinjaenv.get_template('managevariable.html')
+
     variable = session.query(Variable).filter(Variable.id == \
             variableid).first()
 
@@ -607,6 +680,11 @@ def manage_variable(env, variableid):
             return str('Invalid POST data')
 
         data['newname'] = urllib.unquote_plus(data['newname'])
+        if len(data['newname']) == 0 or len(data['newname']) > 20:
+            return str(template_render(tmpl,
+                {   'session' : env ['beaker.session'],
+                    'error' : 'Variable name too long.',
+                }))
 
         res = session.query(Variable).filter(Variable.name ==
                 data['newname']).first()
@@ -627,9 +705,6 @@ def manage_variable(env, variableid):
         {   'session' : env['beaker.session'],
             'variable' : variable
         }))
-        
-
-
 
 
 def manage_variables(env, pageid):
@@ -674,7 +749,8 @@ def register_user(env):
         if 'mail' in data:
             data['mail'] = urllib.unquote_plus(data['mail'])
 
-        if len(data['user']) > 20 or len(data['pass']) > 20:
+        if len(data['user']) > 20 or len(data['pass']) > 20 or \
+           len(data['user']) == 0 or len(data['pass']) == 0:
             return str(template_render(tmpl,
             {   'session' : env['beaker.session'], 'registerfail' : True,
                 'error' : 'Username or Password too long.'}  ))

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}
+    Variable Management: Create Variable.
+{% endblock %}
+
+{% block content %}
+<h1> Create a new variable </h1>
+
+{% if not newvariable%}
+
+    {% if error %}
+    <p> Error: {{ error }} </p>
+    {% endif %}
+    <form method="post" action="{{baseurl}}/manage/variable/new">
+        <h2>Name:  <input type="text" name="variable"></input> </h2>
+        <h2>Is variable (not random event)
+            <input type="checkbox" name="is_var"></input>
+        </h2>
+        <input type="submit" value="Create Variable"> </input>
+    </form>
+
+{% else %}
+
+    {% if newvariable %}
+    You just created <b>{{ newvariable.name }}</b>. You can <a
+        href="{{baseurl}}/manage/variable/{{newvariable.id}}"> Manage </a>
+    it here.
+    {% endif %}
+
+{% endif %}
+
+{% endblock %}
