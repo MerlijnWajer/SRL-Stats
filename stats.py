@@ -23,6 +23,9 @@ from graph import GraphTool
 # For date & time utils
 import datetime
 
+# For unquote
+import urllib
+
 # For regex
 import re
 
@@ -339,16 +342,8 @@ def login(env):
             return str(template_render(tmpl,
             {   'session' : env['beaker.session'], 'loginfail' : True}  ))
 
-        data['user'] = data['user'].replace('+', ' ')
-        data['pass'] = data['pass'].replace('+', ' ')
-
-        if not alphanumspace.match(data['user']):
-            return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
-
-        if not alphanumspace.match(data['pass']):
-            return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
+        data['user'] = urllib.unquote_plus(data['user'])
+        data['pass'] = urllib.unquote_plus(data['pass'])
 
         data['pass'] = hashlib.sha256(data['pass']).hexdigest()
 
@@ -396,7 +391,6 @@ def api_commit(env):
 
     data = read_post_data(env)
 
-
     # XXX FIXME This is ugly
     pd = data.copy()
     pd['password'] = 'xxxxxxxx'
@@ -407,15 +401,14 @@ def api_commit(env):
     if not 'user' in data or not 'password' in data:
         return '110'
 
-    data['user'] = data['user'].replace('+', ' ')
-    data['password'] = data['password'].replace('+', ' ')
+    data['user'] = urllib.unquote_plus(data['user'])
+    data['password'] = urllib.unquote_plus(data['password'])
 
-    # Space in name is '+' (POST RFC)
-    if not alphanumspace.match(data['user']):
-        return '110'
-
-    if not alphanumspace.match(data['password']):
-        return '110'
+#    if not alphanumspace.match(data['user']):
+#        return '110'
+#
+#    if not alphanumspace.match(data['password']):
+#        return '110'
 
     data['password'] = hashlib.sha256(data['password']).hexdigest()
 
@@ -430,6 +423,8 @@ def api_commit(env):
     if not 'script' in data:
         return '120'
 
+    data['script'] = urllib.unquote_plus(data['script'])
+
     script = session.query(Script).filter(Script.id == data['script']).first()
 
     if not script:
@@ -441,7 +436,7 @@ def api_commit(env):
         return '130'
 
     try:
-        time = data['time']
+        time = int(data['time'])
     except ValueError:
         return '130'
 
@@ -460,6 +455,7 @@ def api_commit(env):
     vars = dict()
 
     for x, y in data.iteritems():
+        x = urllib.unquote_plus(x)
         x = x.lower()
         if x not in script_vars:
             return '140'
@@ -556,7 +552,7 @@ def create_script(env):
 
             if 'script' in data:
                 s = data['script']
-                s = s.replace('+', ' ')
+                s = urllib.unquote_plus(s)
 
             if not alphanumspace.match(s):
                 return str(template_render(tmpl, { 'session' : env ['beaker.session'],
@@ -601,10 +597,10 @@ def register_user(env):
             {   'session' : env['beaker.session'], 'registerfail' : True,
                 'error' : 'Post data not complete'}  ))
 
-        data['user'] = data['user'].replace('+', ' ')
-        data['pass'] = data['pass'].replace('+', ' ')
+        data['user'] = urllib.unquote_plus(data['user'])
+        data['pass'] = urllib.unquote_plus(data['pass'])
         if 'mail' in data:
-            data['mail'] = data['mail'].replace('%40', '@')
+            data['mail'] = urllib.unquote_plus(data['mail'])
 
         if len(data['user']) > 20 or len(data['pass']) > 20:
             return str(template_render(tmpl,
@@ -622,15 +618,15 @@ def register_user(env):
         log.log([], LVL_VERBOSE, PyLogger.INFO, 'Register POST data: %s' %
                 str(data))
 
-        if not alphanumspace.match(data['user']):
-            return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'registerfail' : True,
-                'error' : 'Username contains invalid characters'}  ))
-
-        if not alphanumspace.match(data['pass']):
-            return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'registerfail' : True,
-                'error' : 'Password contains invalid characters'}  ))
+#        if not alphanumspace.match(data['user']):
+#            return str(template_render(tmpl,
+#            {   'session' : env['beaker.session'], 'registerfail' : True,
+#                'error' : 'Username contains invalid characters'}  ))
+#
+#        if not alphanumspace.match(data['pass']):
+#            return str(template_render(tmpl,
+#            {   'session' : env['beaker.session'], 'registerfail' : True,
+#                'error' : 'Password contains invalid characters'}  ))
 
         if 'mail' in data and data['mail']:
             if not emailre.match(data['mail']):
@@ -726,6 +722,7 @@ def signature_api_commit(env):
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
+    jinjaenv.autoescape = True
     wt = WebTool()
     ut = UserTool(session)
     st = ScriptTool(session)
