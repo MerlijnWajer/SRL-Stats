@@ -553,8 +553,7 @@ def create_script(env):
             if 'script' in data:
                 s = data['script']
                 s = urllib.unquote_plus(s)
-
-            if not alphanumspace.match(s):
+            else:
                 return str(template_render(tmpl, { 'session' : env ['beaker.session'],
                     'error' : 'Error: Script contains invalid characters'}))
 
