@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}
+    Variable Management: {{ variable.name }}
+{% endblock %}
+
+{% block content %}
+<h1> {{ variable.name }} </h1>
+
+{% if error %}
+<p> Error: {{ error }} </p>
+{% endif %}
+<form method="post" action="{{baseurl}}/manage/variable/{{ variable.id }}">
+New Name: <input type="text" value="" name="newname"> </input>
+<input type="submit" value="Rename variable"> </input>
+</form>
+
+{% endblock %}

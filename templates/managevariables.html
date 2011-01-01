@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}
+    Variable Management: {{ user.name }}
+{% endblock %}
+
+{% block content %}
+
+{% if variables %}
+
+    <table>
+        <tr>
+            <th> Variable ID </th>
+            <th> Variable Name </th>
+        </tr>
+
+    {% for variable in variables %}
+        <tr>
+            <td>
+                {{ variable.id }}
+            </td>
+            <td> 
+                <a href="{{baseurl}}/manage/variable/{{ variable.id }}">
+                    {{ variable.name }}
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+
+    </table>
+
+    <p>
+    {% if pageid > 1 %}
+    <a href="{{baseurl}}/variable/all/{{ pageid - 1 }}">
+        prev
+    </a>
+    <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">
+        next
+    </a>
+    {% else %}
+    <a href="{{baseurl}}/variable/all/{{ pageid + 1 }}">
+        next
+    </a>
+    {% endif %}
+    </p>
+{% else %}
+    <p> How now, brown cow? (No more variables) </p>
+{% endif %}
+
+    <a href="{{baseurl}}/manage/script/new">Create a new script</a>
+
+{% endblock %}
