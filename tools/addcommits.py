@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append('..')
+
 from cli import *
 from random import randrange
 
