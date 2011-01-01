@@ -490,8 +490,6 @@ def manage_scripts(env):
         {   'session' : env ['beaker.session'],
             'user' : user }))
 
-    # If we get to here, we are logged in.
-
 def manage_script(env, scriptid):
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
@@ -581,6 +579,81 @@ def create_script(env):
     return str(template_render(tmpl,
         { 'session' : env ['beaker.session']
             }))
+
+def create_variable(env):
+    pass
+
+def manage_variable(env, variableid):
+    if not loggedin(env):
+        tmpl = jinjaenv.get_template('loginform.html')
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']} ))
+
+    tmpl = jinjaenv.get_template('managevariable.html')
+    
+    variable = session.query(Variable).filter(Variable.id == \
+            variableid).first()
+
+    if not variable:
+        return None
+
+    if str(env['REQUEST_METHOD']) == 'POST':
+        data = read_post_data(env)
+
+        if data is None:
+            return str('Invalid POST data')
+
+        if 'newname' not in data:
+            return str('Invalid POST data')
+
+        data['newname'] = urllib.unquote_plus(data['newname'])
+
+        res = session.query(Variable).filter(Variable.name ==
+                data['newname']).first()
+
+        if res is None:
+            variable.name = data['newname']
+            session.add(variable)
+            session.commit()
+        else:
+            return str(template_render(tmpl,
+                {   'session' : env ['beaker.session'],
+                    'error' : 'Name already exists in the system.',
+                    'variable' : variable
+                }))
+
+
+    return str(template_render(tmpl,
+        {   'session' : env['beaker.session'],
+            'variable' : variable
+        }))
+        
+
+
+
+
+def manage_variables(env, pageid):
+    if not loggedin(env):
+        tmpl = jinjaenv.get_template('loginform.html')
+        return str(template_render(tmpl,
+            {   'session' : env['beaker.session']} ))
+    
+    user = session.query(User).filter(User.id == \
+            env['beaker.session']['loggedin_id']).first()
+
+    if not user:
+        return None
+
+    tmpl = jinjaenv.get_template('managevariables.html')
+    pageid = get_pageid(pageid)
+    variables =  session.query(Variable).order_by(Variable.id).offset(\
+            (pageid-1) * RESULTS_PER_PAGE).limit(RESULTS_PER_PAGE).all()
+
+    return str(template_render(tmpl, 
+        {   'session' : env ['beaker.session'],
+            'variables' : variables,
+            'pageid' : pageid,
+            'user' : user }))
 
 def register_user(env):
     tmpl = jinjaenv.get_template('registeruser.html')

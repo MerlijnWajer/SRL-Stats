@@ -79,12 +79,8 @@ wt.add_rule(re.compile('^%s/logout$' % BASE_URL), logout, [])
 
 wt.add_rule(re.compile('^%s/register$' % BASE_URL), register_user, [])
 
+# API
 wt.add_rule(re.compile('^%s/api/commit$' % BASE_URL), api_commit, [])
-
-wt.add_rule(re.compile('^%s/manage/scripts$' % BASE_URL), manage_scripts, [])
-wt.add_rule(re.compile('^%s/manage/script/([0-9]{1,6})$' % BASE_URL),
-    manage_script, ['scriptid'])
-wt.add_rule(re.compile('^%s/manage/script/new$' % BASE_URL), create_script, [])
 
 wt.add_rule(re.compile('^%s/api/script/([0-9]{1,6})$' % BASE_URL),
     signature_api_script, ['scriptid'])
@@ -95,6 +91,18 @@ wt.add_rule(re.compile('^%s/api/user/([0-9]{1,6})$' % BASE_URL),
 wt.add_rule(re.compile('^%s/api/commit/last$' % BASE_URL), 
         signature_api_commit, [])
 
+# Manage rules
+
+wt.add_rule(re.compile('^%s/manage/scripts$' % BASE_URL), manage_scripts, [])
+wt.add_rule(re.compile('^%s/manage/script/([0-9]{1,6})$' % BASE_URL),
+    manage_script, ['scriptid'])
+wt.add_rule(re.compile('^%s/manage/script/new$' % BASE_URL), create_script, [])
+
+wt.add_rule(re.compile('^%s/manage/variable/new$' % BASE_URL), create_variable, [])
+wt.add_rule(re.compile('^%s/manage/variable/([0-9]{1,6})$' % BASE_URL),
+    manage_variable, ['variableid'])
+wt.add_rule(re.compile('^%s/manage/variables/([0-9]{1,6})?$' % BASE_URL),
+        manage_variables, ['pageid'])
 
 # Default page
 wt.add_rule(re.compile('^%s/?$' % BASE_URL),
