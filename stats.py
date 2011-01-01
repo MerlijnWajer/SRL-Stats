@@ -122,25 +122,35 @@ TODO
 """
 
 def stats(env, start_response):
+    """
+        Main function. Handles all the requests.
+    """
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
             (env['REQUEST_URI'], env['REMOTE_ADDR']))
 
+    # Search in the known ``rules'' (see rules.py) and call function if
+    # existant.
     r = wt.apply_rule(env['REQUEST_URI'], env)
 
+    # Result 'None' means 404.
     if r is None:
         start_response('404 Not Found', [('Content-Type', 'text/html')])
         tmpl = jinjaenv.get_template('404.html')
 
         return str(template_render(tmpl, {
-            'url' : env['REQUEST_URI'], 'session' : env['beaker.session']
-            }, default_page=False))
+            'url' : env['REQUEST_URI'], 'session' : env['beaker.session']},
+            default_page=False))
+
+    # XXX: Remove statement in favour of the next
     elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
         start_response('200 OK', [('Content-Type', 'image/svg+xml')])
         r = r[1]
     elif type(r) in (tuple, list) and len(r) >= 1:
+        # response with custom type.
         start_response('200 OK', [('Content-Type', r[0])])
         r = r[1]
     else:
+        # Normal response.
         start_response('200 OK', [('Content-Type', 'text/html;charset=utf8')])
 
     return [r]
@@ -154,11 +164,17 @@ def loggedin(env):
     return False
 
 def general(env):
+    """
+        Default page.
+    """
     tmpl = jinjaenv.get_template('base.html')
 
     return str(template_render(tmpl, {'session' : env['beaker.session']} ))
 
 def user(env, userid=None):
+    """
+        User information page. See ``user.html'' for the template.
+    """
     tmpl = jinjaenv.get_template('user.html')
     uinfo = ut.info(userid)
 
@@ -172,6 +188,9 @@ def user(env, userid=None):
         ))
 
 def user_commit(env, userid=None, pageid=None):
+    """
+        Page with user commits. See ``usercommits.html'' for the template.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('usercommits.html')
@@ -185,6 +204,9 @@ def user_commit(env, userid=None, pageid=None):
         ))
 
 def script(env, scriptid=None):
+    """
+        Script information page. See ``script.html'' for the template.
+    """
     tmpl = jinjaenv.get_template('script.html')
     sinfo = st.info(scriptid)
 
@@ -200,6 +222,10 @@ def script(env, scriptid=None):
         ))
 
 def script_commit(env, scriptid=None,pageid=None):
+    """
+        Page with commits to script. See ``scriptcommits.html'' for the
+        template.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scriptcommits.html')
@@ -213,6 +239,10 @@ def script_commit(env, scriptid=None,pageid=None):
         ))
 
 def script_graph(env, scriptid=None):
+    """
+        Experimental function to generate graphs.
+        Rather messy at the moment.
+    """
     sinfo = st.info(scriptid)
     if sinfo is None:
         return None
@@ -239,6 +269,10 @@ def script_graph(env, scriptid=None):
     return ['graph', s]
 
 def commit(env, commitid=None):
+    """
+        Page for commit-specific information. See ``commit.html'' for the
+        template.
+    """
     tmpl = jinjaenv.get_template('commit.html')
     _commit = ct.info(commitid)
     
@@ -250,6 +284,10 @@ def commit(env, commitid=None):
         ))
 
 def variable(env, variableid=None):
+    """
+        Page for information about a variable. See ``variable.html'' for the
+        template.
+    """
     tmpl = jinjaenv.get_template('variable.html')
     _variable = vt.info(variableid)
 
@@ -263,6 +301,9 @@ def variable(env, variableid=None):
         ))
 
 def users(env, pageid=None):
+    """
+        Page with a list of users.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('users.html')
@@ -273,6 +314,9 @@ def users(env, pageid=None):
         ))
 
 def scripts(env, pageid=None):
+    """
+        Page with a list of scripts.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scripts.html')
