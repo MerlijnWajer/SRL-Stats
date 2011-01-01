@@ -131,7 +131,9 @@ def stats(env, start_response):
         start_response('404 Not Found', [('Content-Type', 'text/html')])
         tmpl = jinjaenv.get_template('404.html')
 
-        return str(template_render(tmpl, {'url' : env['REQUEST_URI']}, default_page=False))
+        return str(template_render(tmpl, {
+            'url' : env['REQUEST_URI'], 'session' : env['beaker.session']
+            }, default_page=False))
     elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
         start_response('200 OK', [('Content-Type', 'image/svg+xml')])
         r = r[1]
@@ -355,6 +357,11 @@ def login(env):
             env['beaker.session']['loggedin'] = True
             env['beaker.session']['loggedin_id'] = res.id
             env['beaker.session']['loggedin_name'] = res.name
+
+            # XXX: Do not rely on this. Only use for showing permissions where
+            # extra checks aren't nessecary. EG: Fine for links, not fine for 
+            # actual db changes + access to pages.
+            env['beaker.session']['loggedin_level'] = res.admin_level
             env['beaker.session'].save()
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
@@ -608,6 +615,9 @@ def create_variable(env):
     if not user:
         return None
 
+    if user.admin_level < 1:
+        return str('Access denied')
+
     tmpl = jinjaenv.get_template('createvariable.html')
 
     if str(env['REQUEST_METHOD']) == 'POST':
@@ -626,7 +636,7 @@ def create_variable(env):
             return str(template_render(tmpl, { 'session' : env ['beaker.session'],
                 'error' : 'Error: Variable name has invalid length'}))
 
-        # is 'on' when checked; not in data when not clicked. XXX
+        # 'on' when checked; not in data when not clicked. XXX
         if 'is_var' in data:
             v = 1
         else:
@@ -662,6 +672,9 @@ def manage_variable(env, variableid):
     if not user:
         return None
     
+    if user.admin_level < 1:
+        return str('Access denied')
+
     tmpl = jinjaenv.get_template('managevariable.html')
 
     variable = session.query(Variable).filter(Variable.id == \
@@ -718,6 +731,9 @@ def manage_variables(env, pageid):
 
     if not user:
         return None
+
+    if user.admin_level < 1:
+        return str('Access denied')
 
     tmpl = jinjaenv.get_template('managevariables.html')
     pageid = get_pageid(pageid)

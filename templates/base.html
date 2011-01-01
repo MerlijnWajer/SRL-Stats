@@ -37,9 +37,11 @@
                 My Scripts
             </a>
 
+            {% if session['loggedin_level'] > 0 %}
             <a href="{{baseurl}}/manage/variables/">
                 Manage Variables
             </a>
+            {% endif %}
 
             <a href="{{baseurl}}/logout">
                 Log out ({{ session['loggedin_name'] }})
