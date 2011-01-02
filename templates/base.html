@@ -74,10 +74,10 @@
             {% if topusers %}
             <h1>Top Users</h1>
             <ul>
-                {% for user in topusers: %}
+                {% for user,utime in topusers: %}
                 <li>
-                <a href="{{baseurl}}/user/{{ user[2] }}">
-                    {{ user[1] }} ({{ user[0] }} min.)
+                <a href="{{baseurl}}/user/{{ user.id }}">
+                    {{ user.name }} ({{ ctime }} min.)
                 </a>
                 </li>
                 {% endfor %}
@@ -89,8 +89,8 @@
             <ul>
                 {% for script in topscripts: %}
                 <li>
-                <a href="{{baseurl}}/script/{{ script[2] }}">
-                    {{ script[1] }} ({{ script[0] }} min.)
+                <a href="{{baseurl}}/script/{{ script[1] }}">
+                    {{ script[0] }} ({{ script[2] }} min.)
                 </a>
                 </li>
                 {% endfor %}
