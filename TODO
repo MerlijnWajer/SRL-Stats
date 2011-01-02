@@ -1,11 +1,11 @@
 TODO:
-    -   Fix bug: If a script/user has no commits, it isn't listed in the
-        ``Scripts / User'' list.
+    -   Create proper sqlalchemy aliases instead of 'sum_1' and 'coalesce_1'
+    -   Implement ranking system. With temporary tables?
+    -   Implement favicon.ico / support for static files.
     -   Add optionparser for logfiles, etc.
     -   My Commits page?
     -   Customized page if you're logged in? Recent commit by you, recent
         commits to your scripts?
-    -   Add additional URLs (/user/:id/scripts)
     -   Images per variable?
 
     -   Pages and graphs for Variables.
