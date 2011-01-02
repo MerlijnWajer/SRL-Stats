@@ -77,7 +77,7 @@
                 {% for user,utime in topusers: %}
                 <li>
                 <a href="{{baseurl}}/user/{{ user.id }}">
-                    {{ user.name }} ({{ ctime }} min.)
+                    {{ user.name }} ({{ utime }} min.)
                 </a>
                 </li>
                 {% endfor %}
