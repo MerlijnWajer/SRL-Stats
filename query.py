@@ -23,7 +23,7 @@ class UserTool(StatsTool):
         return self.s.query(User, func.coalesce(func.sum(Commit.timeadd),
             literal_column('0'))).outerjoin(
             (Commit, Commit.user_id == User.id)).group_by(
-             User).order_by([desc('coalesce_1'),asc(Variable.id)]).offset(
+             User).order_by([desc('coalesce_1'),asc(User.id)]).offset(
                      _offset).limit(_limit).all()
 
     def info(self, uid):
@@ -113,7 +113,7 @@ class ScriptTool(StatsTool):
             func.sum(Commit.timeadd), literal_column('0'))).outerjoin(
                 (Commit, Commit.script_id == Script.id)).group_by(
              Script.name, Script.id).order_by([desc('coalesce_1'),
-                 asc(Variable.id)]).offset(_offset).limit(_limit).all()
+                 asc(Script.id)]).offset(_offset).limit(_limit).all()
 
     def info(self, sid):
         script = self.s.query(Script).filter(Script.id==sid).first()
