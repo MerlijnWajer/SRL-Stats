@@ -20,10 +20,11 @@ class UserTool(StatsTool):
         """
             Return the top *limit* users based on time added.
         """
-        return self.s.query(User, func.coalesce(func.sum(Commit.timeadd),
-            literal_column('0'))).outerjoin(
+        coales = (func.coalesce(func.sum(Commit.timeadd), \
+                literal_column('0'))).label('TimeAdd')
+        return self.s.query(User, coales).outerjoin(
             (Commit, Commit.user_id == User.id)).group_by(
-             User).order_by(desc('coalesce_1'),asc(User.id)).offset(
+             User).order_by(desc(coales),asc(User.id)).offset(
                      _offset).limit(_limit).all()
 
     def info(self, uid):
@@ -109,10 +110,12 @@ class UserTool(StatsTool):
 class ScriptTool(StatsTool):
 
     def top(self, _offset=0, _limit=10):
-        return self.s.query(Script.name, Script.id, func.coalesce(
-            func.sum(Commit.timeadd), literal_column('0'))).outerjoin(
+        coales = (func.coalesce(func.sum(Commit.timeadd), \
+                literal_column('0'))).label('TimeAdd')
+
+        return self.s.query(Script.name, Script.id, coales).outerjoin(
                 (Commit, Commit.script_id == Script.id)).group_by(
-             Script.name, Script.id).order_by(desc('coalesce_1'),
+             Script.name, Script.id).order_by(desc(coales),
                  asc(Script.id)).offset(_offset).limit(_limit).all()
 
     def info(self, sid):
@@ -183,12 +186,14 @@ class CommitTool(StatsTool):
 class VariableTool(StatsTool):
 
     def top(self, _offset=0, _limit=10, only_vars=False):
-        obj = self.s.query(Variable, func.coalesce(func.sum(CommitVar.amount),
-            literal_column('0'))).outerjoin(
+        coales = (func.coalesce(func.sum(CommitVar.amount), \
+                literal_column('0'))).label('AmountSum')
+
+        obj = self.s.query(Variable, coales).outerjoin(
                 (CommitVar, Variable.id == CommitVar.variable_id))
         if only_vars:
             obj = obj.filter(Variable.is_var==1)
-        obj = obj.group_by(Variable).order_by(desc('coalesce_1'),
+        obj = obj.group_by(Variable).order_by(desc(coales),
             asc(Variable.id)).offset(_offset).limit(_limit)
         return obj.all()
 
