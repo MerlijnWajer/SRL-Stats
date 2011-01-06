@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, Integer, String, DateTime, func, \
-     ForeignKey
+     ForeignKey, Unicode
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
@@ -24,7 +24,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), unique=True)
+    name = Column(Unicode(20), unique=True)
     password = Column(String(64), nullable=False)
     mail = Column(String(40), nullable=True)
     registertime = Column(DateTime, default=func.now())
@@ -38,7 +38,7 @@ class User(Base):
         self.mail = mail
 
     def __repr__(self):
-        return 'User(%s)' % self.name
+        return 'User(%s)' % self.name.encode('utf8')
 
 class Script(Base):
     """
@@ -49,7 +49,7 @@ class Script(Base):
 
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('users.id'))
-    name = Column(String(40), unique=True)
+    name = Column(Unicode(40), unique=True)
 
     owner = relationship(User, backref=backref('scripts', order_by=id))
     variables = relationship('Variable', secondary=script_variables,
@@ -99,7 +99,7 @@ class Variable(Base):
     __tablename__ = 'variables'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(30), unique=True)
+    name = Column(Unicode(30), unique=True)
 
     # TODO -> turn to boolean?
     is_var = Column(Integer, nullable=False)
