@@ -1,6 +1,10 @@
+"""
+    Query.py consists out of several useful classes to work with the User,
+    Script, Variable, Commit and CommitVar classes.
+"""
 # Find exact depends?
 from sqlalchemy import *
-from classes import User, Script, Variable, Commit, CommitVar, Base
+from classes import User, Script, Variable, Commit, CommitVar
 
 class StatsTool(object):
     def __init__(self, sell):
@@ -77,15 +81,20 @@ class UserTool(StatsTool):
     def listc_script(self, uid, sid, _offset=0, _limit=10):
         """
             Return the commits made by user to a specific script.
+            Returns the user object as *user*; the script as *script* and the
+            commits as *commits*.
         """
+        # Make sure the user exists.
         user = self.s.query(User).filter(User.id == uid).first()
         if user is None:
             return None
 
+        # Make sure the script exists.
         script = self.s.query(Script).filter(Script.id == sid).first()
         if script is None:
             return None
 
+        # Get all the commits.
         commits = self.s.query(Commit).join(
             (User, User.id==Commit.user_id)).filter(
                 User.id == uid).filter(
@@ -106,8 +115,16 @@ class UserTool(StatsTool):
         return commits
 
 class ScriptTool(StatsTool):
+    """
+        ScriptTool is a Script helper. It can return the top scripts and return
+        script specific information; such as vars and time. It can also list the
+        commits made to a script.
+    """
 
     def top(self, _offset=0, _limit=10):
+        """
+            Return the top scripts; based on the time committed to the script.
+        """
         coales = (func.coalesce(func.sum(Commit.timeadd), \
                 literal_column('0'))).label('TimeAdd')
 
@@ -117,6 +134,13 @@ class ScriptTool(StatsTool):
                  asc(Script.id)).offset(_offset).limit(_limit).all()
 
     def info(self, sid):
+        """
+            Return script information:
+                -   Script Object
+                -   Variables *committed* to the script
+                -   Time committed to the script (the amount of commits and
+                    their total time)
+        """
         script = self.s.query(Script).filter(Script.id==sid).first()
         if script is None:
             return None
@@ -136,6 +160,9 @@ class ScriptTool(StatsTool):
         return dict(zip(['script', 'vars', 'time'], [script, vars, restime]))
 
     def listc(self, script, _offset=0, _limit=10):
+        """
+            List the commits of the script.
+        """
         commits = self.s.query(Commit).join((Script,
             Script.id==Commit.script_id)).filter(Script.id == \
                     script.id).order_by(desc(Commit.id)).offset(
@@ -143,12 +170,23 @@ class ScriptTool(StatsTool):
         return commits
 
 class CommitTool(StatsTool):
+    """
+        CommitTool is a Commit helper. It can add a commit; return the top
+        commits (latest) and return commit specific information.
+    """
 
     def top(self, _offset=0, _limit=10):
+        """
+            Return the newest commits (ordered by the time they were added, or
+            rather; by their id; descending.
+        """
         return self.s.query(Commit).order_by(desc(Commit.id)).offset(
             _offset).limit(_limit).all()
 
     def info(self, cid):
+        """
+            Return commit object of the commit with id *cid*.
+        """
         return self.s.query(Commit).filter(Commit.id == cid).first()
 
     def add(self, user, script, time, vars):
@@ -179,8 +217,16 @@ class CommitTool(StatsTool):
         return True
 
 class VariableTool(StatsTool):
+    """
+        VariableTool is the Variable helper. It can return the top variables
+        based on the amount the variable has been committed; it can also return
+        variable specific information.
+    """
 
     def top(self, _offset=0, _limit=10, only_vars=False):
+        """
+            Return the top Variables.
+        """
         coales = (func.coalesce(func.sum(CommitVar.amount), \
                 literal_column('0'))).label('AmountSum')
 
@@ -193,6 +239,10 @@ class VariableTool(StatsTool):
         return obj.all()
 
     def info(self, variableid):
+        """
+            Return information about the variable: The total commit amount plus
+            the Variable object.
+        """
         variable = \
             self.s.query(Variable).filter(Variable.id==variableid).first()
         if variable is None:

@@ -329,6 +329,9 @@ def scripts(env, pageid=None):
         )
 
 def commits(env, pageid=None):
+    """
+        Page with a list of commits.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('commits.html')
@@ -339,6 +342,9 @@ def commits(env, pageid=None):
         )
 
 def variables(env, pageid=None):
+    """
+        Page with a list of variables.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('variables.html')
@@ -349,6 +355,9 @@ def variables(env, pageid=None):
         )
 
 def user_script_stats(env, userid, scriptid):
+    """
+        Page with information for a script specific to a user.
+    """
     data = ut.info_script(userid, scriptid)
     if data is None:
         return None
@@ -363,6 +372,9 @@ def user_script_stats(env, userid, scriptid):
         'session' : env['beaker.session']})
 
 def user_script_commits(env, userid, scriptid, pageid):
+    """
+        Page with commits made to a script by a specific user.
+    """
     pageid = get_pageid(pageid)
     data = ut.listc_script(userid, scriptid,(pageid-1)*RESULTS_PER_PAGE,
             RESULTS_PER_PAGE)
@@ -377,6 +389,9 @@ def user_script_commits(env, userid, scriptid, pageid):
         )
 
 def login(env):
+    """
+        Login method. Handles both GET and POST requests.
+    """
     tmpl = jinjaenv.get_template('loginform.html')
 
     if str(env['REQUEST_METHOD']) == 'POST':
@@ -426,6 +441,9 @@ def login(env):
         return None
 
 def logout(env):
+    """
+        Logout method.
+    """
     tmpl = jinjaenv.get_template('base.html')
 
     s = env['beaker.session']
@@ -437,6 +455,9 @@ def logout(env):
     return template_render(tmpl, dict())
 
 def api_commit(env):
+    """
+        API to send a commit to the stats system using POST data.
+    """
     if str(env['REQUEST_METHOD']) != 'POST':
         # 404
         return None
@@ -525,6 +546,9 @@ def api_commit(env):
     return '100'
 
 def manage_scripts(env):
+    """
+        Page to manage scripts.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
@@ -543,6 +567,9 @@ def manage_scripts(env):
             'user' : user })
 
 def manage_script(env, scriptid):
+    """
+        Page to manage a specific script. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
@@ -594,6 +621,9 @@ def manage_script(env, scriptid):
             })
 
 def create_script(env):
+    """
+        Page to create a script. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
@@ -649,6 +679,9 @@ def create_script(env):
             })
 
 def create_variable(env):
+    """
+        Page to create a variable. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
@@ -706,6 +739,9 @@ def create_variable(env):
         {'session' : env['beaker.session'] })
 
 def manage_variable(env, variableid):
+    """
+        Page to manage a variable. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
@@ -766,6 +802,9 @@ def manage_variable(env, variableid):
 
 
 def manage_variables(env, pageid):
+    """
+        Overview page with variables (manage)
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
@@ -792,6 +831,9 @@ def manage_variables(env, pageid):
             'user' : user })
 
 def register_user(env):
+    """
+        Page to register a user. Handles POST and GET data.
+    """
     tmpl = jinjaenv.get_template('registeruser.html')
 
     if str(env['REQUEST_METHOD']) == 'POST':
@@ -859,6 +901,9 @@ def register_user(env):
         return None
 
 def signature_api_script(env, scriptid):
+    """
+        Script Signature API.
+    """
     info = st.info(scriptid)
 
     if info is None:
@@ -884,6 +929,9 @@ def signature_api_script(env, scriptid):
         }, indent=' ' * 4)]
 
 def signature_api_user(env, userid):
+    """
+        User Signature API
+    """
     info = ut.info(userid)
 
     if info is None:
@@ -905,6 +953,9 @@ def signature_api_user(env, userid):
         }, indent=' ' * 4)]
 
 def signature_api_commit(env):
+    """
+        Commit Signature API.
+    """
     info = ct.top(_limit=1)
 
     if not info:
@@ -935,9 +986,10 @@ if __name__ == '__main__':
 
     verbosity = LVL_VERBOSE
 
-    log.assign_logfile('/tmp/stats.log', verbosity, (PyLogger.WARNING,
+    from sys import stdout, stderr
+    log.assign_logfile(stdout, verbosity, (PyLogger.WARNING,
         PyLogger.INFO))
-    log.assign_logfile('/tmp/stats.err', verbosity, (PyLogger.ERROR,))
+    log.assign_logfile(stderr, verbosity, (PyLogger.ERROR,))
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Starting the SRL-Stats server')
 
     # Add all rules
