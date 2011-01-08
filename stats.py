@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """
 Stats Module. Run this via fcgi.
+The Stats module glues all the components together into a function website.
+In short, every URL is defined by some *rule* and each rule has its own method.
+Then, based on the URL; a template is loaded and required variables are
+loaded.
 """
 
 # Routes:
@@ -53,12 +57,21 @@ alphanumspace = re.compile('^[0-9,A-z, ]+$')
 emailre = re.compile('^[A-z,0-9,\._-]+@[A-z0-9.-]+\.[A-z]{2,6}$')
 
 def get_pageid(pageid):
+    """
+        Parses *pageid*; if it is a valid integer; the integer is returned. If
+        the integer is < 1; 1 is returned. If it is not an integer; 1 is
+        returned as well.
+    """
     try:
         return max(int(pageid), 1)
     except (ValueError, TypeError):
         return 1
 
 def template_render(template, vars, default_page=True):
+    """
+        Template Render is a helper that initialisaes basic template variables
+        and handles unicode encoding.
+    """
     vars['_import'] = {'datetime' : datetime}
     vars['baseurl'] = BASE_URL
     #vars['uniencode'] = type
@@ -513,7 +526,7 @@ def api_commit(env):
     except ValueError:
         return '130'
 
-    if time < 1:
+    if time < 1 or time > 60:
         return '130'
 
     del data['time']
