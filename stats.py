@@ -551,7 +551,8 @@ def api_commit(env):
             return '150'
 
         if v < 1:
-            return '150'
+            continue
+#            return '150'
 
         vars[script_vars[x]] = v
 
