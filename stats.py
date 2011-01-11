@@ -507,6 +507,9 @@ def api_commit(env):
     del data['password']
 
     if not 'script' in data:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: No script' \
+                        % (env['REMOTE_ADDR'], pd))
         return '120'
 
     data['script'] = urllib.unquote_plus(data['script'])
@@ -514,19 +517,31 @@ def api_commit(env):
     script = session.query(Script).filter(Script.id == data['script']).first()
 
     if not script:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid script' \
+                        % (env['REMOTE_ADDR'], pd))
         return '120'
 
     del data['script']
 
     if not 'time' in data:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: No time' \
+                        % (env['REMOTE_ADDR'], pd))
         return '130'
 
     try:
         time = int(data['time'])
     except ValueError:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid time (int)' \
+                        % (env['REMOTE_ADDR'], pd))
         return '130'
 
     if time < 5 or time > 60:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid time (range)' \
+                        % (env['REMOTE_ADDR'], pd))
         return '130'
 
     del data['time']
@@ -544,13 +559,22 @@ def api_commit(env):
         x = urllib.unquote_plus(x)
         x = x.lower()
         if x not in script_vars:
+            log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid variable for script' \
+                        % (env['REMOTE_ADDR'], pd))
             return '140'
         try:
             v = int(y)
         except ValueError:
+            log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid variable value' \
+                        % (env['REMOTE_ADDR'], pd))
             return '150'
 
         if v < 1:
+            log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid variable value (0)' \
+                        % (env['REMOTE_ADDR'], pd))
             continue
 #            return '150'
 
@@ -558,6 +582,9 @@ def api_commit(env):
 
     res = ct.add(user, script, time, vars)
     if not res:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+            'API_COMMIT: %s, %s DENIED: Internal error' \
+                    % (env['REMOTE_ADDR'], pd))
         return '160'
 
     return '100'
@@ -625,9 +652,11 @@ def manage_script(env, scriptid):
 
             try:
                 session.commit()
-            except sqlalchemy.exc.IntegrityError:
+            except sqlalchemy.exc.IntegrityError as e:
                 session.rollback()
                 print 'Rollback in stats.py, manage_script:'
+                print 'Postdata:', data
+                print 'Exception:', e
 
     vars = session.query(Variable).filter(Variable.is_var==1).all()
     vars_intersect = filter(lambda x: x not in script.variables, vars) if \
@@ -692,9 +721,11 @@ def create_script(env):
         session.add(script)
         try:
            session.commit()
-        except sqlalchemy.exc.IntegrityError:
+        except sqlalchemy.exc.IntegrityError as e:
             session.rollback()
             print 'Rollback! create_script.'
+            print 'Post data:', data
+            print 'Exception:', e
 
         return template_render(tmpl, { 'session' : env ['beaker.session'],
               'newscript' : script })
@@ -756,9 +787,11 @@ def create_variable(env):
         session.add(variable)
         try:
             session.commit()
-        except sqlalchemy.exc.IntegrityError:
+        except sqlalchemy.exc.IntegrityError as e:
             session.rollback()
             print 'Rollback! create_variable'
+            print 'Post data:', data
+            print 'Exception:', e
 
         return template_render(tmpl, { 'session' : env ['beaker.session'],
               'newvariable' : variable})
@@ -817,9 +850,11 @@ def manage_variable(env, variableid):
             session.add(variable)
             try:
                 session.commit()
-            except sqlalchemy.exc.IntegrityError:
+            except sqlalchemy.exc.IntegrityError as e:
                 session.rollback()
                 print 'Rollback in manage_variable'
+                print 'Post data:', data
+                print 'Exception:', e
         else:
             return template_render(tmpl,
                 {   'session' : env ['beaker.session'],
@@ -924,9 +959,11 @@ def register_user(env):
         session.add(user)
         try:
            session.commit()
-        except sqlalchemy.exc.IntegrityError:
+        except sqlalchemy.exc.IntegrityError as e:
             session.rollback()
             print 'Rollback in register_user'
+            print 'Post data:', data
+            print 'Exception:', e
 
         return template_render(tmpl,
             { 'session' : env['beaker.session'], 'registersuccess' : True} )
