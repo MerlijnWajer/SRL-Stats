@@ -213,10 +213,11 @@ class CommitTool(StatsTool):
 
         try:
             self.s.commit()
-        except sqlalchemy.exc.IntegrityError:
+        except sqlalchemy.exc.IntegrityError as e:
             self.s.rollback()
             print 'Rollback in query.py; ct.add! ... ', user, script, time, vars
-        # XXX: Failsafe?
+            print 'Data:', user, script, time, vars
+            print 'Exception:', e
 
         return True
 
