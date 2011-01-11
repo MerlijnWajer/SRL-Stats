@@ -13,6 +13,7 @@
                 <th> Commit ID </th>
                 <th> Time Committed </th>
                 <th> Committed by </th>
+                <th> Committed on </th>
             </tr>
         {% for commit in commits %}
             <tr>
@@ -32,6 +33,9 @@
                 <a href="{{baseurl}}/user/{{commit.user.id}}/script/{{script.id}}">
                     (Show commits only from {{commit.user.name}})
                 </a>
+                </td>
+                <td>
+                   {{ commit.timestamp.ctime() }}
                 </td>
             </tr>
         {% endfor %}
