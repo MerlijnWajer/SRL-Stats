@@ -5,7 +5,7 @@
 
 {% block content %}
     <h1>
-        {{ script.name }}
+        {{ script.name }} by {{ script.owner.name }}
     </h1>
     <p> {{ script.name }} has total running time of
     {{ _import['datetime'].timedelta(minutes=ttc) }}
