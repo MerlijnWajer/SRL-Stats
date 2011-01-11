@@ -526,7 +526,7 @@ def api_commit(env):
     except ValueError:
         return '130'
 
-    if time < 1 or time > 60:
+    if time < 5 or time > 60:
         return '130'
 
     del data['time']
@@ -548,6 +548,9 @@ def api_commit(env):
         try:
             v = int(y)
         except ValueError:
+            return '150'
+
+        if v < 1:
             return '150'
 
         vars[script_vars[x]] = v
@@ -619,7 +622,11 @@ def manage_script(env, scriptid):
             if var not in script.variables:
                 script.variables.append(var)
 
-            session.commit()
+            try:
+                session.commit()
+            except sqlalchemy.exc.IntegrityError:
+                session.rollback()
+                print 'Rollback in stats.py, manage_script:'
 
     vars = session.query(Variable).filter(Variable.is_var==1).all()
     vars_intersect = filter(lambda x: x not in script.variables, vars) if \
@@ -682,7 +689,11 @@ def create_script(env):
         script.owner = user
 
         session.add(script)
-        session.commit()
+        try:
+           session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            session.rollback()
+            print 'Rollback! create_script.'
 
         return template_render(tmpl, { 'session' : env ['beaker.session'],
               'newscript' : script })
@@ -742,7 +753,11 @@ def create_variable(env):
 
         variable = Variable(s, v)
         session.add(variable)
-        session.commit()
+        try:
+            session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            session.rollback()
+            print 'Rollback! create_variable'
 
         return template_render(tmpl, { 'session' : env ['beaker.session'],
               'newvariable' : variable})
@@ -799,7 +814,11 @@ def manage_variable(env, variableid):
         if res is None:
             variable.name = data['newname']
             session.add(variable)
-            session.commit()
+            try:
+                session.commit()
+            except sqlalchemy.exc.IntegrityError:
+                session.rollback()
+                print 'Rollback in manage_variable'
         else:
             return template_render(tmpl,
                 {   'session' : env ['beaker.session'],
@@ -902,7 +921,11 @@ def register_user(env):
                 else None)
 
         session.add(user)
-        session.commit()
+        try:
+           session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            session.rollback()
+            print 'Rollback in register_user'
 
         return template_render(tmpl,
             { 'session' : env['beaker.session'], 'registersuccess' : True} )
