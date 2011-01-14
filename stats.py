@@ -15,7 +15,7 @@ loaded.
 import os
 os.environ['MPLCONFIGDIR'] = '/tmp'
 
-from flup.server.fcgi import WSGIServer
+from flup.server.fcgi_fork import WSGIServer
 from jinja2 import Environment, PackageLoader
 from sql import User, Script, Variable, Commit, CommitVar, Base, session
 from webtool import WebTool, read_post_data
@@ -191,6 +191,7 @@ def user(env, userid=None):
         User information page. See ``user.html'' for the template.
     """
     tmpl = jinjaenv.get_template('user.html')
+    # Also list variables for user.
     uinfo = ut.info(userid)
 
     if uinfo is None:
@@ -501,6 +502,9 @@ def api_commit(env):
     user = session.query(User).filter(User.name == data['user']).filter(
             User.password == data['password']).first()
     if not user:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: No user' \
+                        % (env['REMOTE_ADDR'], pd))
         return '110'
 
     del data['user']
@@ -1006,6 +1010,7 @@ def signature_api_user(env, userid):
     """
         User Signature API
     """
+    # XXX: Also list variables for user
     info = ut.info(userid)
 
     if info is None:
