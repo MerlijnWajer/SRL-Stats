@@ -1,11 +1,14 @@
 import urllib
 import urllib2
 
-url = 'http://old.villavu.com/stats/api/commit'
+import hashlib
+
+url = 'http://localhost/stats/api/commit'
+#url = 'http://old.villavu.com/stats/api/commit'
 values = {
-            'user' : '',
+            'user' : 'whines',
             'password' : '',
-            'script' : '7',
+            'script' : '1',
             'essence' : '28',
             'time' : '5'
         }

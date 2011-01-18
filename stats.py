@@ -17,7 +17,7 @@ os.environ['MPLCONFIGDIR'] = '/tmp'
 
 from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
-from sql import User, Script, Variable, Commit, CommitVar, Base, session
+from sql import User, Script, Variable, Commit, CommitVar, Base, Session
 from webtool import WebTool, read_post_data
 
 # Import UserTool
@@ -140,6 +140,8 @@ def stats(env, start_response):
     """
         Main function. Handles all the requests.
     """
+    print 'Session:', Session()
+    print 'Rolling back the session:', Session()
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
             (env['REQUEST_URI'], env['REMOTE_ADDR']))
 
@@ -210,11 +212,15 @@ def user_commit(env, userid=None, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('usercommits.html')
-    user = session.query(User).filter(User.id==userid).first()
+
+    session = Session()
+
+    user = Session.query(User).filter(User.id==userid).first()
+    user_commits = ut.listc(user, (pageid-1)*RESULTS_PER_PAGE,
+            RESULTS_PER_PAGE)
 
     return template_render(tmpl,
-        {   'user' : user, 'commits' : ut.listc(user, 
-                (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'user' : user, 'commits' : user_commits,
             'pageid' : pageid,
             'session' : env['beaker.session']}
         )
@@ -245,7 +251,7 @@ def script_commit(env, scriptid=None,pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scriptcommits.html')
-    script = session.query(Script).filter(Script.id==scriptid).first()
+    script = Session.query(Script).filter(Script.id==scriptid).first()
 
     return template_render(tmpl,
         {   'script' : script, 'commits' : st.listc(script,
@@ -291,7 +297,7 @@ def commit(env, commitid=None):
     """
     tmpl = jinjaenv.get_template('commit.html')
     _commit = ct.info(commitid)
-    
+
     if _commit is None:
         return None
 
@@ -323,9 +329,10 @@ def users(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('users.html')
+    top_users = ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
 
     return template_render(tmpl,
-        {   'users' : ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'users' : top_users,
             'pageid' : pageid, 'session' : env['beaker.session']}
         )
 
@@ -336,9 +343,10 @@ def scripts(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scripts.html')
+    top_scripts = st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
 
     return template_render(tmpl,
-        {   'scripts' : st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'scripts' : top_scripts,
             'pageid' : pageid, 'session' : env['beaker.session']}
         )
 
@@ -349,9 +357,10 @@ def commits(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('commits.html')
+    latest_commits = ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
 
     return template_render(tmpl,
-        {   'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'commits' : latest_commits,
             'pageid' : pageid, 'session' : env['beaker.session']}
         )
 
@@ -362,9 +371,10 @@ def variables(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('variables.html')
+    top_variables = vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
 
     return template_render(tmpl,
-        {   'variables' : vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+        {   'variables' : top_variables,
             'pageid' : pageid, 'session' : env['beaker.session']}
         )
 
@@ -424,7 +434,7 @@ def login(env):
         data['pass'] = hashlib.sha256(data['pass']).hexdigest()
 
         # Does the user exist (and is the password valid)?
-        res =  session.query(User).filter(User.name ==
+        res =  Session.query(User).filter(User.name ==
                 data['user']).filter(User.password == data['pass']).first()
 
         if res:
@@ -436,6 +446,7 @@ def login(env):
             # extra checks aren't nessecary. EG: Fine for links, not fine for 
             # actual db changes + access to pages.
             env['beaker.session']['loggedin_level'] = res.admin_level
+            print 'USER ADMIN LEVEL',res.admin_level
             env['beaker.session'].save()
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
@@ -498,6 +509,8 @@ def api_commit(env):
 #        return '110'
 
     data['password'] = hashlib.sha256(data['password']).hexdigest()
+
+    session = Session()
 
     user = session.query(User).filter(User.name == data['user']).filter(
             User.password == data['password']).first()
@@ -580,7 +593,8 @@ def api_commit(env):
                 'API_COMMIT: %s, %s DENIED: Invalid variable value (0)' \
                         % (env['REMOTE_ADDR'], pd))
             continue
-#            return '150'
+            # XXX: Add this eventually
+            # return '150'
 
         vars[script_vars[x]] = v
 
@@ -602,7 +616,7 @@ def manage_scripts(env):
         return template_render(tmpl,
             {   'session' : env['beaker.session']} )
 
-    user = session.query(User).filter(User.id == \
+    user = Session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
 
     if not user:
@@ -610,7 +624,7 @@ def manage_scripts(env):
 
     tmpl = jinjaenv.get_template('managescripts.html')
 
-    return template_render(tmpl, 
+    return template_render(tmpl,
         {   'session' : env ['beaker.session'],
             'user' : user })
 
@@ -622,6 +636,8 @@ def manage_script(env, scriptid):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
             {   'session' : env['beaker.session']}  )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -682,6 +698,8 @@ def create_script(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
             {   'session' : env['beaker.session']}  )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -746,6 +764,8 @@ def create_variable(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
             {   'session' : env['beaker.session']} )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -812,6 +832,8 @@ def manage_variable(env, variableid):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
             {   'session' : env['beaker.session']} )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -882,18 +904,20 @@ def manage_variables(env, pageid):
         return template_render(tmpl,
             {   'session' : env['beaker.session']} )
 
-    user = session.query(User).filter(User.id == \
+    user = Session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
 
     if not user:
+        print 'NO USER' # XXX
         return None
 
     if user.admin_level < 1:
+        print 'Access denied'
         return str('Access denied')
 
     tmpl = jinjaenv.get_template('managevariables.html')
     pageid = get_pageid(pageid)
-    variables =  session.query(Variable).order_by(Variable.id).offset(\
+    variables =  Session.query(Variable).order_by(Variable.id).offset(\
             (pageid-1) * RESULTS_PER_PAGE).limit(RESULTS_PER_PAGE).all()
 
     return template_render(tmpl, 
@@ -907,6 +931,8 @@ def register_user(env):
         Page to register a user. Handles POST and GET data.
     """
     tmpl = jinjaenv.get_template('registeruser.html')
+
+    session = Session()
 
     if str(env['REQUEST_METHOD']) == 'POST':
         data = read_post_data(env)
@@ -1053,10 +1079,10 @@ if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     jinjaenv.autoescape = True
     wt = WebTool()
-    ut = UserTool(session)
-    st = ScriptTool(session)
-    ct = CommitTool(session)
-    vt = VariableTool(session)
+    ut = UserTool(Session)
+    st = ScriptTool(Session)
+    ct = CommitTool(Session)
+    vt = VariableTool(Session)
     gt = GraphTool()
 
     from log import PyLogger
@@ -1076,4 +1102,5 @@ if __name__ == '__main__':
 
     usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
-    WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()
+    WSGIServer(SessionMiddleware(stats, session_options)).run()
+    #WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()
