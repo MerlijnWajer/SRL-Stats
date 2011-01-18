@@ -15,7 +15,7 @@ loaded.
 import os
 os.environ['MPLCONFIGDIR'] = '/tmp'
 
-from flup.server.fcgi_fork import WSGIServer
+from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
 from sql import User, Script, Variable, Commit, CommitVar, Base, session
 from webtool import WebTool, read_post_data
@@ -1076,4 +1076,4 @@ if __name__ == '__main__':
 
     usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
-    WSGIServer(SessionMiddleware(stats, session_options)).run()
+    WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()

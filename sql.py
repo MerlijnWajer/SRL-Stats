@@ -13,6 +13,6 @@ from classes import User, Script, Variable, Commit, CommitVar, Base
 
 Base.metadata.create_all(engine)
 metadata = Base.metadata
-from sqlalchemy.orm import sessionmaker
-Session = sessionmaker(bind=engine)
-session = Session()
+from sqlalchemy.orm import scoped_session, sessionmaker
+Session = scoped_session(sessionmaker(bind=engine))
+

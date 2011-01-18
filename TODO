@@ -1,4 +1,9 @@
 TODO:
+    -   Delete / clean tools
+    -   Implement searches.
+    -   Give the user a permanent link to his acccount; on register.
+    -   Redirect to the user to his own account; on login.
+    -   On commits; use IDs for variables instead of names? / Also allow ID's?
     -   Implement ranking system. With temporary tables?
     -   Implement favicon.ico / support for static files.
     -   Add optionparser for logfiles, etc.
