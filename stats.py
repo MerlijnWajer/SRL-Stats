@@ -601,7 +601,7 @@ def manage_scripts(env):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
             {   'session' : env['beaker.session']} )
-    
+
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
 
@@ -630,7 +630,7 @@ def manage_script(env, scriptid):
         return None
 
     script = session.query(Script).filter(Script.id == scriptid).first()
-    
+
     if not script:
         return None
 
@@ -650,7 +650,7 @@ def manage_script(env, scriptid):
 
             if var is None:
                 return str('Invalid POST data: No such variable')
-            
+
             if var not in script.variables:
                 script.variables.append(var)
 
@@ -818,7 +818,7 @@ def manage_variable(env, variableid):
 
     if not user:
         return None
-    
+
     if user.admin_level < 1:
         return str('Access denied')
 
@@ -881,7 +881,7 @@ def manage_variables(env, pageid):
         tmpl = jinjaenv.get_template('loginform.html')
         return template_render(tmpl,
             {   'session' : env['beaker.session']} )
-    
+
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
 
