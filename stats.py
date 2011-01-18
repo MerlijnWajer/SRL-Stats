@@ -140,8 +140,7 @@ def stats(env, start_response):
     """
         Main function. Handles all the requests.
     """
-    print 'Session:', Session()
-    print 'Rolling back the session:', Session()
+#    print 'SQLAlchemy Session:', Session()
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
             (env['REQUEST_URI'], env['REMOTE_ADDR']))
 
@@ -446,7 +445,6 @@ def login(env):
             # extra checks aren't nessecary. EG: Fine for links, not fine for 
             # actual db changes + access to pages.
             env['beaker.session']['loggedin_level'] = res.admin_level
-            print 'USER ADMIN LEVEL',res.admin_level
             env['beaker.session'].save()
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
@@ -908,11 +906,9 @@ def manage_variables(env, pageid):
             env['beaker.session']['loggedin_id']).first()
 
     if not user:
-        print 'NO USER' # XXX
         return None
 
     if user.admin_level < 1:
-        print 'Access denied'
         return str('Access denied')
 
     tmpl = jinjaenv.get_template('managevariables.html')
