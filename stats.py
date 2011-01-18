@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """
 Stats Module. Run this via fcgi.
+The Stats module glues all the components together into a function website.
+In short, every URL is defined by some *rule* and each rule has its own method.
+Then, based on the URL; a template is loaded and required variables are
+loaded.
 """
 
 # Routes:
@@ -13,7 +17,7 @@ os.environ['MPLCONFIGDIR'] = '/tmp'
 
 from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
-from sql import User, Script, Variable, Commit, CommitVar, Base, session
+from sql import User, Script, Variable, Commit, CommitVar, Base, Session
 from webtool import WebTool, read_post_data
 
 # Import UserTool
@@ -53,14 +57,25 @@ alphanumspace = re.compile('^[0-9,A-z, ]+$')
 emailre = re.compile('^[A-z,0-9,\._-]+@[A-z0-9.-]+\.[A-z]{2,6}$')
 
 def get_pageid(pageid):
+    """
+        Parses *pageid*; if it is a valid integer; the integer is returned. If
+        the integer is < 1; 1 is returned. If it is not an integer; 1 is
+        returned as well.
+    """
     try:
         return max(int(pageid), 1)
     except (ValueError, TypeError):
         return 1
 
 def template_render(template, vars, default_page=True):
+    """
+        Template Render is a helper that initialisaes basic template variables
+        and handles unicode encoding.
+    """
     vars['_import'] = {'datetime' : datetime}
     vars['baseurl'] = BASE_URL
+    #vars['uniencode'] = type
+    #vars['uniencode'] = lambda x: x.encode('utf8')
 
     if default_page:
         vars['topusers']    = ut.top(_limit=4)
@@ -68,7 +83,7 @@ def template_render(template, vars, default_page=True):
         vars['lastcommits'] = ct.top(_limit=4)
         vars['topvars']     = vt.top(_limit=4, only_vars=True)
 
-    return template.render(vars)
+    return unicode(template.render(vars)).encode('utf8')
 
 
 # URLs:
@@ -125,6 +140,7 @@ def stats(env, start_response):
     """
         Main function. Handles all the requests.
     """
+#    print 'SQLAlchemy Session:', Session()
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
             (env['REQUEST_URI'], env['REMOTE_ADDR']))
 
@@ -137,9 +153,9 @@ def stats(env, start_response):
         start_response('404 Not Found', [('Content-Type', 'text/html')])
         tmpl = jinjaenv.get_template('404.html')
 
-        return str(template_render(tmpl, {
+        return template_render(tmpl, {
             'url' : env['REQUEST_URI'], 'session' : env['beaker.session']},
-            default_page=False))
+            default_page=False)
 
     # XXX: Remove statement in favour of the next
     elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
@@ -169,23 +185,24 @@ def general(env):
     """
     tmpl = jinjaenv.get_template('base.html')
 
-    return str(template_render(tmpl, {'session' : env['beaker.session']} ))
+    return template_render(tmpl, {'session' : env['beaker.session']} )
 
 def user(env, userid=None):
     """
         User information page. See ``user.html'' for the template.
     """
     tmpl = jinjaenv.get_template('user.html')
+    # Also list variables for user.
     uinfo = ut.info(userid)
 
     if uinfo is None:
         return None
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         {   'ttc' : uinfo['time']['commit_time'],
             'tc' : uinfo['time']['commit_amount'],
             'user' : uinfo['user'], 'session' : env['beaker.session'] }
-        ))
+        )
 
 def user_commit(env, userid=None, pageid=None):
     """
@@ -194,14 +211,18 @@ def user_commit(env, userid=None, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('usercommits.html')
-    user = session.query(User).filter(User.id==userid).first()
 
-    return str(template_render(tmpl,
-        {   'user' : user, 'commits' : ut.listc(user, 
-                (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+    session = Session()
+
+    user = Session.query(User).filter(User.id==userid).first()
+    user_commits = ut.listc(user, (pageid-1)*RESULTS_PER_PAGE,
+            RESULTS_PER_PAGE)
+
+    return template_render(tmpl,
+        {   'user' : user, 'commits' : user_commits,
             'pageid' : pageid,
             'session' : env['beaker.session']}
-        ))
+        )
 
 def script(env, scriptid=None):
     """
@@ -213,13 +234,13 @@ def script(env, scriptid=None):
     if sinfo is None:
         return None
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         {   'ttc' : sinfo['time']['commit_time'],
             'tc' :  sinfo['time']['commit_amount'],
             'script' : sinfo['script'], 'vars' : sinfo['vars'],
             'session' : env['beaker.session']
         }
-        ))
+        )
 
 def script_commit(env, scriptid=None,pageid=None):
     """
@@ -229,14 +250,14 @@ def script_commit(env, scriptid=None,pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scriptcommits.html')
-    script = session.query(Script).filter(Script.id==scriptid).first()
+    script = Session.query(Script).filter(Script.id==scriptid).first()
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         {   'script' : script, 'commits' : st.listc(script,
                 (pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
             'pageid' : pageid,
             'session' : env['beaker.session']}
-        ))
+        )
 
 def script_graph(env, scriptid=None):
     """
@@ -275,13 +296,13 @@ def commit(env, commitid=None):
     """
     tmpl = jinjaenv.get_template('commit.html')
     _commit = ct.info(commitid)
-    
+
     if _commit is None:
         return None
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         {   'commit' : _commit, 'session' : env['beaker.session']}
-        ))
+        )
 
 def variable(env, variableid=None):
     """
@@ -294,11 +315,11 @@ def variable(env, variableid=None):
     if _variable is None:
         return None
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         {   'variable' : _variable['variable'], 'amount' :
             _variable['amount'][0],
             'session' : env['beaker.session'] }
-        ))
+        )
 
 def users(env, pageid=None):
     """
@@ -307,11 +328,12 @@ def users(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('users.html')
+    top_users = ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
 
-    return str(template_render(tmpl,
-        {   'users' : ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+    return template_render(tmpl,
+        {   'users' : top_users,
             'pageid' : pageid, 'session' : env['beaker.session']}
-        ))
+        )
 
 def scripts(env, pageid=None):
     """
@@ -320,62 +342,79 @@ def scripts(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scripts.html')
+    top_scripts = st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
 
-    return str(template_render(tmpl,
-        {   'scripts' : st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+    return template_render(tmpl,
+        {   'scripts' : top_scripts,
             'pageid' : pageid, 'session' : env['beaker.session']}
-        ))
+        )
 
 def commits(env, pageid=None):
+    """
+        Page with a list of commits.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('commits.html')
+    latest_commits = ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
 
-    return str(template_render(tmpl,
-        {   'commits' : ct.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+    return template_render(tmpl,
+        {   'commits' : latest_commits,
             'pageid' : pageid, 'session' : env['beaker.session']}
-        ))
+        )
 
 def variables(env, pageid=None):
+    """
+        Page with a list of variables.
+    """
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('variables.html')
+    top_variables = vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
 
-    return str(template_render(tmpl,
-        {   'variables' : vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+    return template_render(tmpl,
+        {   'variables' : top_variables,
             'pageid' : pageid, 'session' : env['beaker.session']}
-        ))
+        )
 
 def user_script_stats(env, userid, scriptid):
+    """
+        Page with information for a script specific to a user.
+    """
     data = ut.info_script(userid, scriptid)
     if data is None:
         return None
 
     tmpl = jinjaenv.get_template('userscript.html')
 
-    return str(template_render(tmpl, {
+    return template_render(tmpl, {
         'user' : data['user'],
         'script' : data['script'],
         'time' : data['time'],
         'vars' : data['vars'],
-        'session' : env['beaker.session']}))
+        'session' : env['beaker.session']})
 
 def user_script_commits(env, userid, scriptid, pageid):
+    """
+        Page with commits made to a script by a specific user.
+    """
     pageid = get_pageid(pageid)
     data = ut.listc_script(userid, scriptid,(pageid-1)*RESULTS_PER_PAGE,
             RESULTS_PER_PAGE)
 
     tmpl = jinjaenv.get_template('userscriptcommits.html')
 
-    return str(template_render(tmpl, {
+    return template_render(tmpl, {
         'user' : data['user'],
         'script' : data['script'],
         'commits' : data['commits'],
         'pageid' : pageid, 'session' : env['beaker.session']}
-        ))
-    pass
+        )
 
 def login(env):
+    """
+        Login method. Handles both GET and POST requests.
+    """
     tmpl = jinjaenv.get_template('loginform.html')
 
     if str(env['REQUEST_METHOD']) == 'POST':
@@ -385,8 +424,8 @@ def login(env):
             return str('Error: Invalid post data')
 
         if 'user' not in data or 'pass' not in data:
-            return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
+            return template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginfail' : True}  )
 
         data['user'] = urllib.unquote_plus(data['user'])
         data['pass'] = urllib.unquote_plus(data['pass'])
@@ -394,7 +433,7 @@ def login(env):
         data['pass'] = hashlib.sha256(data['pass']).hexdigest()
 
         # Does the user exist (and is the password valid)?
-        res =  session.query(User).filter(User.name ==
+        res =  Session.query(User).filter(User.name ==
                 data['user']).filter(User.password == data['pass']).first()
 
         if res:
@@ -409,22 +448,25 @@ def login(env):
             env['beaker.session'].save()
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
-            return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginsuccess' : True} ))
+            return template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginsuccess' : True} )
         else:
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Failed login %s : %s' % (env['REMOTE_ADDR'], data['user']))
-            return str(template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginfail' : True}  ))
+            return template_render(tmpl,
+            {   'session' : env['beaker.session'], 'loginfail' : True}  )
 
     elif str(env['REQUEST_METHOD']) == 'GET':
 
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']}  ))
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']}  )
     else:
         return None
 
 def logout(env):
+    """
+        Logout method.
+    """
     tmpl = jinjaenv.get_template('base.html')
 
     s = env['beaker.session']
@@ -433,9 +475,12 @@ def logout(env):
     log.log([], LVL_NOTABLE, PyLogger.INFO,
             'Logut %s' % env['REMOTE_ADDR'])
 
-    return str(template_render(tmpl, dict()))
+    return template_render(tmpl, dict())
 
 def api_commit(env):
+    """
+        API to send a commit to the stats system using POST data.
+    """
     if str(env['REQUEST_METHOD']) != 'POST':
         # 404
         return None
@@ -463,15 +508,23 @@ def api_commit(env):
 
     data['password'] = hashlib.sha256(data['password']).hexdigest()
 
+    session = Session()
+
     user = session.query(User).filter(User.name == data['user']).filter(
             User.password == data['password']).first()
     if not user:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: No user' \
+                        % (env['REMOTE_ADDR'], pd))
         return '110'
 
     del data['user']
     del data['password']
 
     if not 'script' in data:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: No script' \
+                        % (env['REMOTE_ADDR'], pd))
         return '120'
 
     data['script'] = urllib.unquote_plus(data['script'])
@@ -479,19 +532,31 @@ def api_commit(env):
     script = session.query(Script).filter(Script.id == data['script']).first()
 
     if not script:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid script' \
+                        % (env['REMOTE_ADDR'], pd))
         return '120'
 
     del data['script']
 
     if not 'time' in data:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: No time' \
+                        % (env['REMOTE_ADDR'], pd))
         return '130'
 
     try:
         time = int(data['time'])
     except ValueError:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid time (int)' \
+                        % (env['REMOTE_ADDR'], pd))
         return '130'
 
-    if time < 1:
+    if time < 5 or time > 60:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid time (range)' \
+                        % (env['REMOTE_ADDR'], pd))
         return '130'
 
     del data['time']
@@ -509,27 +574,47 @@ def api_commit(env):
         x = urllib.unquote_plus(x)
         x = x.lower()
         if x not in script_vars:
+            log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid variable for script' \
+                        % (env['REMOTE_ADDR'], pd))
             return '140'
         try:
             v = int(y)
         except ValueError:
+            log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid variable value' \
+                        % (env['REMOTE_ADDR'], pd))
             return '150'
+
+        if v < 1:
+            log.log([], LVL_NOTABLE, PyLogger.WARNING,
+                'API_COMMIT: %s, %s DENIED: Invalid variable value (0)' \
+                        % (env['REMOTE_ADDR'], pd))
+            continue
+            # XXX: Add this eventually
+            # return '150'
 
         vars[script_vars[x]] = v
 
     res = ct.add(user, script, time, vars)
     if not res:
+        log.log([], LVL_NOTABLE, PyLogger.WARNING,
+            'API_COMMIT: %s, %s DENIED: Internal error' \
+                    % (env['REMOTE_ADDR'], pd))
         return '160'
 
     return '100'
 
 def manage_scripts(env):
+    """
+        Page to manage scripts.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']} ))
-    
-    user = session.query(User).filter(User.id == \
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']} )
+
+    user = Session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
 
     if not user:
@@ -537,15 +622,20 @@ def manage_scripts(env):
 
     tmpl = jinjaenv.get_template('managescripts.html')
 
-    return str(template_render(tmpl, 
+    return template_render(tmpl,
         {   'session' : env ['beaker.session'],
-            'user' : user }))
+            'user' : user })
 
 def manage_script(env, scriptid):
+    """
+        Page to manage a specific script. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']}  ))
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']}  )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -554,7 +644,7 @@ def manage_script(env, scriptid):
         return None
 
     script = session.query(Script).filter(Script.id == scriptid).first()
-    
+
     if not script:
         return None
 
@@ -574,11 +664,17 @@ def manage_script(env, scriptid):
 
             if var is None:
                 return str('Invalid POST data: No such variable')
-            
+
             if var not in script.variables:
                 script.variables.append(var)
 
-            session.commit()
+            try:
+                session.commit()
+            except sqlalchemy.exc.IntegrityError as e:
+                session.rollback()
+                print 'Rollback in stats.py, manage_script:'
+                print 'Postdata:', data
+                print 'Exception:', e
 
     vars = session.query(Variable).filter(Variable.is_var==1).all()
     vars_intersect = filter(lambda x: x not in script.variables, vars) if \
@@ -586,17 +682,22 @@ def manage_script(env, scriptid):
 
     tmpl = jinjaenv.get_template('managescript.html')
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         { 'session' : env ['beaker.session'],
             'script' : script,
             'vars' : vars_intersect
-            }))
+            })
 
 def create_script(env):
+    """
+        Page to create a script. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']}  ))
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']}  )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -615,43 +716,54 @@ def create_script(env):
             s = data['script']
             s = urllib.unquote_plus(s)
         else:
-            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                'error' : 'Error: Script contains invalid characters'}))
+            return template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Script contains invalid characters'})
 
         if len(s) == 0 or len(s) > 20:
-            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                'error' : 'Error: Script name has invalid length'}))
+            return template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Script name has invalid length'})
 
         res = session.query(Script).filter(Script.name == s).all()
         if res:
-            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                'error' : 'Error: Script already exists'}))
+            return template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Script already exists'})
 
         user = session.query(User).filter(User.id == \
                 env['beaker.session']['loggedin_id']).first()
 
         if not user:
-            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                'error' : 'Error: Invalid user in session?'}))
+            return template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Invalid user in session?'})
 
         script = Script(s)
         script.owner = user
 
         session.add(script)
-        session.commit()
+        try:
+           session.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            session.rollback()
+            print 'Rollback! create_script.'
+            print 'Post data:', data
+            print 'Exception:', e
 
-        return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-              'newscript' : script }))
+        return template_render(tmpl, { 'session' : env ['beaker.session'],
+              'newscript' : script })
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         { 'session' : env ['beaker.session']
-            }))
+            })
 
 def create_variable(env):
+    """
+        Page to create a variable. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']} ))
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']} )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
@@ -673,12 +785,12 @@ def create_variable(env):
             s = data['variable']
             s = urllib.unquote_plus(s)
         else:
-            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                'error' : 'Error: Variable name not specified'}))
+            return template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Variable name not specified'})
 
         if len(s) == 0 or len(s) > 20:
-            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                'error' : 'Error: Variable name has invalid length'}))
+            return template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Variable name has invalid length'})
 
         # 'on' when checked; not in data when not clicked. XXX
         if 'is_var' in data:
@@ -690,32 +802,43 @@ def create_variable(env):
             s).first()
 
         if res:
-            return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-                'error' : 'Error: Variable already exists'}))
+            return template_render(tmpl, { 'session' : env ['beaker.session'],
+                'error' : 'Error: Variable already exists'})
 
         variable = Variable(s, v)
         session.add(variable)
-        session.commit()
+        try:
+            session.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            session.rollback()
+            print 'Rollback! create_variable'
+            print 'Post data:', data
+            print 'Exception:', e
 
-        return str(template_render(tmpl, { 'session' : env ['beaker.session'],
-              'newvariable' : variable}))
+        return template_render(tmpl, { 'session' : env ['beaker.session'],
+              'newvariable' : variable})
 
 
-    return str(template_render(tmpl,
-        {'session' : env['beaker.session'] }))
+    return template_render(tmpl,
+        {'session' : env['beaker.session'] })
 
 def manage_variable(env, variableid):
+    """
+        Page to manage a variable. Handles both GET and POST.
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']} ))
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']} )
+
+    session = Session()
 
     user = session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
 
     if not user:
         return None
-    
+
     if user.admin_level < 1:
         return str('Access denied')
 
@@ -738,10 +861,10 @@ def manage_variable(env, variableid):
 
         data['newname'] = urllib.unquote_plus(data['newname'])
         if len(data['newname']) == 0 or len(data['newname']) > 20:
-            return str(template_render(tmpl,
+            return template_render(tmpl,
                 {   'session' : env ['beaker.session'],
                     'error' : 'Variable name too long.',
-                }))
+                })
 
         res = session.query(Variable).filter(Variable.name ==
                 data['newname']).first()
@@ -749,28 +872,37 @@ def manage_variable(env, variableid):
         if res is None:
             variable.name = data['newname']
             session.add(variable)
-            session.commit()
+            try:
+                session.commit()
+            except sqlalchemy.exc.IntegrityError as e:
+                session.rollback()
+                print 'Rollback in manage_variable'
+                print 'Post data:', data
+                print 'Exception:', e
         else:
-            return str(template_render(tmpl,
+            return template_render(tmpl,
                 {   'session' : env ['beaker.session'],
                     'error' : 'Name already exists in the system.',
                     'variable' : variable
-                }))
+                })
 
 
-    return str(template_render(tmpl,
+    return template_render(tmpl,
         {   'session' : env['beaker.session'],
             'variable' : variable
-        }))
+        })
 
 
 def manage_variables(env, pageid):
+    """
+        Overview page with variables (manage)
+    """
     if not loggedin(env):
         tmpl = jinjaenv.get_template('loginform.html')
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']} ))
-    
-    user = session.query(User).filter(User.id == \
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']} )
+
+    user = Session.query(User).filter(User.id == \
             env['beaker.session']['loggedin_id']).first()
 
     if not user:
@@ -781,17 +913,22 @@ def manage_variables(env, pageid):
 
     tmpl = jinjaenv.get_template('managevariables.html')
     pageid = get_pageid(pageid)
-    variables =  session.query(Variable).order_by(Variable.id).offset(\
+    variables =  Session.query(Variable).order_by(Variable.id).offset(\
             (pageid-1) * RESULTS_PER_PAGE).limit(RESULTS_PER_PAGE).all()
 
-    return str(template_render(tmpl, 
+    return template_render(tmpl, 
         {   'session' : env ['beaker.session'],
             'variables' : variables,
             'pageid' : pageid,
-            'user' : user }))
+            'user' : user })
 
 def register_user(env):
+    """
+        Page to register a user. Handles POST and GET data.
+    """
     tmpl = jinjaenv.get_template('registeruser.html')
+
+    session = Session()
 
     if str(env['REQUEST_METHOD']) == 'POST':
         data = read_post_data(env)
@@ -800,9 +937,9 @@ def register_user(env):
             return str('Error: Invalid post data')
 
         if 'user' not in data or 'pass' not in data:
-            return str(template_render(tmpl,
+            return template_render(tmpl,
             {   'session' : env['beaker.session'], 'registerfail' : True,
-                'error' : 'Post data not complete'}  ))
+                'error' : 'Post data not complete'}  )
 
         data['user'] = urllib.unquote_plus(data['user'])
         data['pass'] = urllib.unquote_plus(data['pass'])
@@ -811,63 +948,62 @@ def register_user(env):
 
         if len(data['user']) > 20 or len(data['pass']) > 20 or \
            len(data['user']) == 0 or len(data['pass']) == 0:
-            return str(template_render(tmpl,
+            return template_render(tmpl,
             {   'session' : env['beaker.session'], 'registerfail' : True,
-                'error' : 'Username or Password too long.'}  ))
+                'error' : 'Username or Password too long.'}  )
 
         data['pass'] = hashlib.sha256(data['pass']).hexdigest()
 
         if 'mail' in data:
             if len(data['mail']) > 40:
-                return str(template_render(tmpl,
+                return template_render(tmpl,
             {   'session' : env['beaker.session'], 'registerfail' : True,
-                'error' : 'Email address is too long'} ))
+                'error' : 'Email address is too long'} )
 
         log.log([], LVL_VERBOSE, PyLogger.INFO, 'Register POST data: %s' %
                 str(data))
 
-#        if not alphanumspace.match(data['user']):
-#            return str(template_render(tmpl,
-#            {   'session' : env['beaker.session'], 'registerfail' : True,
-#                'error' : 'Username contains invalid characters'}  ))
-#
-#        if not alphanumspace.match(data['pass']):
-#            return str(template_render(tmpl,
-#            {   'session' : env['beaker.session'], 'registerfail' : True,
-#                'error' : 'Password contains invalid characters'}  ))
-
         if 'mail' in data and data['mail']:
             if not emailre.match(data['mail']):
-                return str(template_render(tmpl,
+                return template_render(tmpl,
                 {   'session' : env['beaker.session'], 'registerfail' : True,
-                    'error': 'Invalid Email.'}  ))
+                    'error': 'Invalid Email.'}  )
 
         # Does the user exist?
         res =  session.query(User).filter(User.name ==
                 data['user']).filter(User.password == data['pass']).first()
 
         if res:
-            return str(template_render(tmpl,
+            return template_render(tmpl,
             {   'session' : env['beaker.session'], 'registerfail' : True,
-                'error' : 'Username already exists'}  ))
+                'error' : 'Username already exists'}  )
 
 
         user = User(data['user'], data['pass'], data['mail'] if 'mail' in data
                 else None)
 
         session.add(user)
-        session.commit()
+        try:
+           session.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            session.rollback()
+            print 'Rollback in register_user'
+            print 'Post data:', data
+            print 'Exception:', e
 
-        return str(template_render(tmpl,
-            { 'session' : env['beaker.session'], 'registersuccess' : True} ))
+        return template_render(tmpl,
+            { 'session' : env['beaker.session'], 'registersuccess' : True} )
 
     elif str(env['REQUEST_METHOD']) == 'GET':
-        return str(template_render(tmpl,
-            {   'session' : env['beaker.session']}  ))
+        return template_render(tmpl,
+            {   'session' : env['beaker.session']}  )
     else:
         return None
 
 def signature_api_script(env, scriptid):
+    """
+        Script Signature API.
+    """
     info = st.info(scriptid)
 
     if info is None:
@@ -893,6 +1029,10 @@ def signature_api_script(env, scriptid):
         }, indent=' ' * 4)]
 
 def signature_api_user(env, userid):
+    """
+        User Signature API
+    """
+    # XXX: Also list variables for user
     info = ut.info(userid)
 
     if info is None:
@@ -914,6 +1054,9 @@ def signature_api_user(env, userid):
         }, indent=' ' * 4)]
 
 def signature_api_commit(env):
+    """
+        Commit Signature API.
+    """
     info = ct.top(_limit=1)
 
     if not info:
@@ -932,10 +1075,10 @@ if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     jinjaenv.autoescape = True
     wt = WebTool()
-    ut = UserTool(session)
-    st = ScriptTool(session)
-    ct = CommitTool(session)
-    vt = VariableTool(session)
+    ut = UserTool(Session)
+    st = ScriptTool(Session)
+    ct = CommitTool(Session)
+    vt = VariableTool(Session)
     gt = GraphTool()
 
     from log import PyLogger
@@ -944,9 +1087,10 @@ if __name__ == '__main__':
 
     verbosity = LVL_VERBOSE
 
-    log.assign_logfile('/dev/null', verbosity, (PyLogger.WARNING,
+    from sys import stdout, stderr
+    log.assign_logfile(stdout, verbosity, (PyLogger.WARNING,
         PyLogger.INFO))
-    log.assign_logfile('/dev/null', verbosity, (PyLogger.ERROR,))
+    log.assign_logfile(stderr, verbosity, (PyLogger.ERROR,))
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Starting the SRL-Stats server')
 
     # Add all rules
@@ -955,3 +1099,4 @@ if __name__ == '__main__':
     usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
     WSGIServer(SessionMiddleware(stats, session_options)).run()
+    #WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()

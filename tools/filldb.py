@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import hashlib
+
 import sys
 sys.path.append('..')
 
@@ -8,28 +10,28 @@ from cli import *
 # directory of ukwords
 w = [x.replace('\n', '') for x in open('../ukwords_small')]
 
-essence = Variable('Essence', 1)
-coal = Variable('Coal', 1)
-iron = Variable('Iron', 1)
-oak = Variable('Oak', 1)
-yew = Variable('Yew', 1)
-tuna = Variable('Tuna', 1)
-salmon = Variable('Salmon', 1)
+essence = Variable(u'Essence', 1)
+coal = Variable(u'Coal', 1)
+iron = Variable(u'Iron', 1)
+oak = Variable(u'Oak', 1)
+yew = Variable(u'Yew', 1)
+tuna = Variable(u'Tuna', 1)
+salmon = Variable(u'Salmon', 1)
 
-session.add(essence)
-session.add(coal)
-session.add(iron)
-session.add(oak)
-session.add(yew)
-session.add(tuna)
-session.add(salmon)
+Session.add(essence)
+Session.add(coal)
+Session.add(iron)
+Session.add(oak)
+Session.add(yew)
+Session.add(tuna)
+Session.add(salmon)
 
-s1 = Script('Essence Miner')
-s2 = Script('Iron Miner')
-s3 = Script('Fisher')
-s4 = Script('Woodcutter')
-s5 = Script('Edgeville Yew Cutter')
-s6 = Script('Lumbridge Coal / Iron Miner')
+s1 = Script(u'Essence Miner')
+s2 = Script(u'Iron Miner')
+s3 = Script(u'Fisher')
+s4 = Script(u'Woodcutter')
+s5 = Script(u'Edgeville Yew Cutter')
+s6 = Script(u'Lumbridge Coal / Iron Miner')
 
 s1.variables.append(essence)
 s2.variables.append(iron)
@@ -41,18 +43,18 @@ s5.variables.append(yew)
 s6.variables.append(iron)
 s6.variables.append(coal)
 
-session.add(s1)
-session.add(s2)
-session.add(s3)
-session.add(s4)
-session.add(s5)
-session.add(s6)
+Session.add(s1)
+Session.add(s2)
+Session.add(s3)
+Session.add(s4)
+Session.add(s5)
+Session.add(s6)
 
 for i in range(100):
-    u = User(w[i], w[i])
-    session.add(u)
+    u = User(w[i], unicode(hashlib.sha256(w[i]).hexdigest()))
+    Session.add(u)
 
-ul = session.query(User).all()
+ul = Session.query(User).all()
 
 from random import randrange
 s1.owner = ul[randrange(0,99)]
@@ -62,4 +64,4 @@ s4.owner = ul[randrange(0,99)]
 s5.owner = ul[randrange(0,99)]
 s6.owner = ul[randrange(0,99)]
 
-session.commit()
+Session.commit()
