@@ -140,7 +140,7 @@ def stats(env, start_response):
     """
         Main function. Handles all the requests.
     """
-#    print 'SQLAlchemy Session:', Session()
+    print 'SQLAlchemy Session:', Session()
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
             (env['REQUEST_URI'], env['REMOTE_ADDR']))
 
@@ -370,7 +370,7 @@ def variables(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('variables.html')
-    top_variables = vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE),
+    top_variables = vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
 
     return template_render(tmpl,
         {   'variables' : top_variables,
