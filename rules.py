@@ -107,10 +107,15 @@ wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/graph$' % BASE_URL),
 wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/?$' % BASE_URL),
         graph_commits_month, ['month'])
 
+wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/user/([0-9]{1,6})/?$' % BASE_URL),
+        graph_commits_month_user, ['month', 'userid'])
+
+wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/script/([0-9]{1,6})/?$' % BASE_URL),
+        graph_commits_month_script, ['month', 'scriptid'])
+
+wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/script/([0-9]{1,6})/user/([0-9]{1,6})/?$' % BASE_URL),
+        graph_commits_month_user_script, ['month', 'scriptid', 'userid'])
 
 # Default page
 wt.add_rule(re.compile('^%s/?$' % BASE_URL),
             general, [])
-
-# One rule to rule them all...
-# ^%s/(user|script|commit)/all/?([0-9]{1,6}?/?$

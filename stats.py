@@ -1088,24 +1088,95 @@ def signature_api_commit(env):
         }, indent=' ' * 4)]
 
 def graph_commits_month(env, month):
+    s = graph_commits_month_dyn(env, month)
+    if s is None:
+        return None
+    else:
+        return ['graph', s]
+
+def graph_commits_month_user(env, month, userid):
+    s = graph_commits_month_dyn(env, month, userid=userid)
+    if s is None:
+        return None
+    else:
+        return ['graph', s]
+
+def graph_commits_month_script(env, month, scriptid):
+    s = graph_commits_month_dyn(env, month, scriptid=scriptid)
+    if s is None:
+        return None
+    else:
+        return ['graph', s]
+
+def graph_commits_month_user_script(env, month, scriptid, userid):
+    s = graph_commits_month_dyn(env, month, scriptid=scriptid, userid=userid)
+    if s is None:
+        return None
+    else:
+        return ['graph', s]
+
+def graph_commits_month_dyn(env, month, scriptid=None, userid=None,
+        select_type='amount'):
+    """
+        Generic function for month graphs.
+        Valid select types: 'amount', 'minutes'
+    """
     month = int(month)
     if month < 1 or month > 12:
         return None
 
-    res = Session.query(extract('day', Commit.timestamp),
-            func.count('*')).filter(extract('month',
-            Commit.timestamp)==month).group_by(extract('day',
-            Commit.timestamp)).all()
+    if scriptid:
+        script = st.info(scriptid)
+        if script is None:
+            return None
 
-    amount = range(31)
-    for x in range(31):
+    if userid:
+        user = ut.info(userid)
+        if user is None:
+            return None
+
+    sel = {'amount' : 
+                Session.query(extract('day', Commit.timestamp),
+                    func.count('*')),
+            'minutes':
+                Session.query(extract('day', Commit.timestamp),
+                    func.sum(Commit.timeadd))
+            }
+    if select_type not in sel:
+        return None
+
+    q = sel[select_type]
+
+    if userid:
+        q = q.filter(Commit.user_id==userid)
+    if scriptid:
+        q = q.filter(Commit.script_id==scriptid)
+
+    q = q.filter(extract('month', Commit.timestamp)==month)
+    q = q.group_by(extract('day', Commit.timestamp))
+
+    res = q.all()
+
+    amount = range(32)
+    for x in range(32):
         amount[x] = 0
 
     for x in res:
         amount[int(x[0])] = x[1]
 
-    s = gt.commit_histogram(range(31), amount, 'Commits per month')
-    return ['graph', s]
+    if scriptid:
+        title = ' to script: %s' % script['script'].name
+    else:
+        title = ''
+
+    if userid:
+        title += ' by user: %s' % user['user'].name
+
+    s = gt.commit_bar(range(1,33), amount, 
+            _title='Commits per day' + title,
+            _xlabel='days', _ylabel='%s of commits' % select_type)
+
+    return s
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
