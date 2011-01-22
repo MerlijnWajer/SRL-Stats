@@ -1087,6 +1087,9 @@ def signature_api_commit(env):
         }, indent=' ' * 4)]
 
 def graph_commits_month(env, month):
+    if month < 1 or month > 12:
+        return None
+
     res = Session.query(extract('day', Commit.timestamp),
             func.count('*')).filter(extract('month',
             Commit.timestamp)==1).group_by(extract('day',
