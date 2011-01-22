@@ -128,6 +128,16 @@ def template_render(template, vars, default_page=True):
 /api/commit/last            |   Get last commit info in JSON
 
 TODO
+
+/graph/commit/
+/graph/commit/month/:id
+
+/graph/script/:id(/month:id)
+/graph/script/:id/user/:id(/month:id)
+
+/graph/user/:id(/month:id)
+
+
 /user/:id/scripts   |   All scripts user committed to
 /manage/variables           |   Add variables to the system.
 
