@@ -1094,7 +1094,7 @@ def graph_commits_month(env, month):
 
     res = Session.query(extract('day', Commit.timestamp),
             func.count('*')).filter(extract('month',
-            Commit.timestamp)==1).group_by(extract('day',
+            Commit.timestamp)==month).group_by(extract('day',
             Commit.timestamp)).all()
 
     amount = range(31)
