@@ -1,5 +1,6 @@
 TODO:
     -   Delete / clean tools
+    -   Fix unicode warnings.
     -   Implement searches.
     -   Give the user a permanent link to his acccount; on register.
     -   Redirect to the user to his own account; on login.
@@ -18,7 +19,7 @@ TODO:
     -   Pages and graphs for Scripts.
         -   Per users (pie)
         -   Per variables (pie)
-        
+
     -   Pages and graphs for Users.
         -   Per script
         -   Per variable
