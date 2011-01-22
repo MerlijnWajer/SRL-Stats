@@ -6,14 +6,14 @@ sys.path.append('..')
 from cli import *
 from random import randrange
 
-ul = session.query(User).all()
-sl = session.query(Script).all()
+ul = Session.query(User).all()
+sl = Session.query(Script).all()
 
 # generate commits
 for i in range(100):
     u = ul[randrange(0, len(ul))]
     s = sl[randrange(0, len(sl))]
-    sv = s.variables + session.query(Variable).filter(Variable.is_var==0).all()
+    sv = s.variables + Session.query(Variable).filter(Variable.is_var==0).all()
     c = Commit(randrange(5, 30))
     c.script = s 
     c.user = u
@@ -27,8 +27,8 @@ for i in range(100):
         cv.commit = c
         cv.variable = v
 
-        session.add(cv)
+        Session.add(cv)
 
-    session.add(c)
+    Session.add(c)
 
-session.commit()
+Session.commit()

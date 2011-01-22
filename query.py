@@ -7,16 +7,16 @@ from sqlalchemy import *
 from classes import User, Script, Variable, Commit, CommitVar
 
 class StatsTool(object):
-    def __init__(self, sell):
+    def __init__(self, sess):
         """
             We need a SQLAlchemy session.
         """
-        self.s = sell
+        self.s = sess
 
 class UserTool(StatsTool):
     """
         UserTool is a User helper class. It doesn't have to be OOP; and OOP
-        may be dropped later on depending whether I still plan to make a 
+        may be dropped later on depending whether I still plan to make a
         caching mechanism or not.
     """
 
@@ -40,7 +40,7 @@ class UserTool(StatsTool):
         if user is None:
             return None
 
-        time = self.s.query(func.count(Commit.timeadd), 
+        time = self.s.query(func.count(Commit.timeadd),
                 func.sum(Commit.timeadd)).join(
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
@@ -79,7 +79,7 @@ class UserTool(StatsTool):
 
         return dict(zip(['user', 'script', 'vars', 'time'], [user, script, \
                 my_vars, restime]))
-        
+
     def listc_script(self, uid, sid, _offset=0, _limit=10):
         """
             Return the commits made by user to a specific script.
@@ -198,6 +198,9 @@ class CommitTool(StatsTool):
         """
             Add a commit to the system.
         """
+
+        session = self.s()
+
         c = Commit(time)
 
         c.user = user
@@ -212,14 +215,14 @@ class CommitTool(StatsTool):
 
 
         for v in cv:
-            self.s.add(v)
+            session.add(v)
 
-        self.s.add(c)
+        session.add(c)
 
         try:
-            self.s.commit()
+            session.commit()
         except sqlalchemy.exc.IntegrityError as e:
-            self.s.rollback()
+            session.rollback()
             print 'Rollback in query.py; ct.add! ... ', user, script, time, vars
             print 'Data:', user, script, time, vars
             print 'Exception:', e

@@ -43,9 +43,6 @@ wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/commits$' \
 wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/commits/([0-9]{1,6})?$' \
         % BASE_URL), script_commit, ['scriptid', 'pageid'])
 
-wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/graph$' % BASE_URL),
-        script_graph, ['scriptid'])
-
 wt.add_rule(re.compile('^%s/script/all/?$' % BASE_URL),
         scripts, [])
 
@@ -103,6 +100,13 @@ wt.add_rule(re.compile('^%s/manage/variable/([0-9]{1,6})$' % BASE_URL),
     manage_variable, ['variableid'])
 wt.add_rule(re.compile('^%s/manage/variables/([0-9]{1,6})?$' % BASE_URL),
         manage_variables, ['pageid'])
+
+wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/graph$' % BASE_URL),
+        script_graph, ['scriptid'])
+
+wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/?$' % BASE_URL),
+        graph_commits_month, ['month'])
+
 
 # Default page
 wt.add_rule(re.compile('^%s/?$' % BASE_URL),
