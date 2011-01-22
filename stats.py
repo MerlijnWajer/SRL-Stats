@@ -174,7 +174,8 @@ def stats(env, start_response):
 
     # XXX: Remove statement in favour of the next
     elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
-        start_response('200 OK', [('Content-Type', 'image/svg+xml')])
+        start_response('200 OK', [('Content-Type', 'image/png')])
+        #start_response('200 OK', [('Content-Type', 'image/svg+xml')])
         r = r[1]
     elif type(r) in (tuple, list) and len(r) >= 1:
         # response with custom type.
@@ -901,7 +902,6 @@ def manage_variable(env, variableid):
                     'error' : 'Name already exists in the system.',
                     'variable' : variable
                 })
-
 
     return template_render(tmpl,
         {   'session' : env['beaker.session'],
