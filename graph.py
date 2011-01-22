@@ -23,15 +23,20 @@ class GraphTool(object):
     def __init__(self):
         pass
 
-    def commit_histogram(self, days, height, _title):
+    def commit_bar(self, _time, amount, _title='Unknown title', 
+            _xlabel = 'Unknown time type', _ylabel='Unknown amount type'):
+        """
+            Generate a bar plot with <time> on X, amount on Y.
+            Specify amount label with _ylabel, time label with _xlabel.
+        """
         fig = plt.figure()
 
         h = fig.add_subplot(111)
-        h.bar(days, height)
+        h.bar(_time, amount)
 
-        plt.xlabel('Days')
-        plt.ylabel('Amount of commits')
-        plt.axis([days[0], days[len(days)-1], 0, max(height)])
+        plt.xlabel(_xlabel)
+        plt.ylabel(_ylabel)
+        plt.axis([_time[0], _time[len(_time)-1], 0, max(amount)])
         
         title(_title)
 
