@@ -48,6 +48,7 @@ from config import BASE_URL, RESULTS_PER_PAGE, \
 
 # XXX: Perhaps move this to query. (Also move all commit extraction to query)
 from sqlalchemy import func
+from sqlalchemy import extract
 
 # Log levels
 LVL_ALWAYS = 0          # Will always be shown.
@@ -1087,6 +1088,7 @@ def signature_api_commit(env):
         }, indent=' ' * 4)]
 
 def graph_commits_month(env, month):
+    month = int(month)
     if month < 1 or month > 12:
         return None
 
