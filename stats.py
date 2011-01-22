@@ -45,6 +45,10 @@ import simplejson as json
 from config import BASE_URL, RESULTS_PER_PAGE, \
     session_options
 
+
+# XXX: Perhaps move this to query. (Also move all commit extraction to query)
+from sqlalchemy import func
+
 # Log levels
 LVL_ALWAYS = 0          # Will always be shown.
 LVL_NOTABLE = 42        # Notable information.
@@ -274,29 +278,30 @@ def script_graph(env, scriptid=None):
         Experimental function to generate graphs.
         Rather messy at the moment.
     """
-    sinfo = st.info(scriptid)
-    if sinfo is None:
-        return None
+    return None
+#    sinfo = st.info(scriptid)
+#    if sinfo is None:
+#        return None
+##
+#    vars = [(x[0], x[1].name) for x in sinfo['vars']]
+#    script = sinfo['script']
+##    from sqlalchemy import func
+##    vars = session.query(Script.name, User.name,
+##            func.sum(Commit.timeadd)).join((Commit, Commit.script_id ==
+##                Script.id)).join((User, User.id ==
+##                    Commit.user_id)).filter(Script.id==1).group_by(Script.name,
+##                            User.name).all()
+##
 #
-    vars = [(x[0], x[1].name) for x in sinfo['vars']]
-    script = sinfo['script']
-#    from sqlalchemy import func
-#    vars = session.query(Script.name, User.name,
-#            func.sum(Commit.timeadd)).join((Commit, Commit.script_id ==
-#                Script.id)).join((User, User.id ==
-#                    Commit.user_id)).filter(Script.id==1).group_by(Script.name,
-#                            User.name).all()
+#    fracs = []
+#    labels = []
 #
-
-    fracs = []
-    labels = []
-
-    for x in vars:
-        fracs.append(x[0])
-        #fracs.append(x[2])
-        labels.append(x[1])
-
-    s = gt.pie(fracs,labels,'Variables for %s' % script.name)
+#    for x in vars:
+#        fracs.append(x[0])
+#        #fracs.append(x[2])
+#        labels.append(x[1])
+#
+#    s = gt.pie(fracs,labels,'Variables for %s' % script.name)
     return ['graph', s]
 
 def commit(env, commitid=None):
@@ -1080,6 +1085,22 @@ def signature_api_commit(env):
         'time_added' : commit.timeadd,
         'timestamp' : commit.timestamp.ctime()
         }, indent=' ' * 4)]
+
+def graph_commits_month(env, month):
+    res = Session.query(extract('day', Commit.timestamp),
+            func.count('*')).filter(extract('month',
+            Commit.timestamp)==1).group_by(extract('day',
+            Commit.timestamp)).all()
+
+    amount = range(31)
+    for x in range(31):
+        amount[x] = 0
+
+    for x in res:
+        amount[int(x[0])] = x[1]
+
+    s = gt.commit_histogram(range(31), amount, 'Commits per month')
+    return ['graph', s]
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
