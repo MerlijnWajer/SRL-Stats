@@ -34,7 +34,7 @@ class GraphTool(object):
         h.set_xlabel(_xlabel)
         h.set_ylabel(_ylabel)
         h.set_xbound(_time[0], _time[len(_time)-1])
-        h.set_ybound(0, max(amount))
+        h.set_ybound(0, int(max(amount)))
         h.set_axis_bgcolor('#FFFFFF')
         
         h.set_title(_title)
