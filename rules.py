@@ -104,17 +104,10 @@ wt.add_rule(re.compile('^%s/manage/variables/([0-9]{1,6})?$' % BASE_URL),
 wt.add_rule(re.compile('^%s/script/([0-9]{1,6})/graph$' % BASE_URL),
         script_graph, ['scriptid'])
 
-wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/?$' % BASE_URL),
-        graph_commits_month, ['month'])
-
-wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/user/([0-9]{1,6})/?$' % BASE_URL),
-        graph_commits_month_user, ['month', 'userid'])
-
-wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/script/([0-9]{1,6})/?$' % BASE_URL),
-        graph_commits_month_script, ['month', 'scriptid'])
-
-wt.add_rule(re.compile('^%s/graph/commits/month/([0-9]{1,6})/script/([0-9]{1,6})/user/([0-9]{1,6})/?$' % BASE_URL),
-        graph_commits_month_user_script, ['month', 'scriptid', 'userid'])
+wt.add_rule(re.compile('^%s/graph/commits(?:/month/([0-9]{1,6}))?(?:/year/'\
+        '([0-9]{1,6}))?(?:/script/([0-9]{1,6}))?(?:/user/([0-9]{1,6}))'\
+        '?(?:/type/([A-z]+))?$' % BASE_URL),
+        graph_commits, ['month', 'year', 'scriptid', 'userid', 'select_type' ])
 
 # Default page
 wt.add_rule(re.compile('^%s/?$' % BASE_URL),

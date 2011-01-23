@@ -127,25 +127,23 @@ def template_render(template, vars, default_page=True):
 /manage/script/:scriptid    |   Show script vars. Allow people to add vars to
                             |   their script. (But not create not vars, nor
                             |   delete vars from their script)
+/manage/variables           |   Add variables to the system.
 
 /api/script/:id             |   Get script info in JSON
 /api/user/:id               |   Get user info in JSON
 /api/commit/last            |   Get last commit info in JSON
 
-TODO
-
 /graph/commit/
 /graph/commit/month/:id
 
-/graph/script/:id(/month:id)
-/graph/script/:id/user/:id(/month:id)
+/graph/script/:id/month:id
+/graph/script/:id/user/:id/month:id
 
-/graph/user/:id(/month:id)
+/graph/user/:id/month:id
 
+TODO
 
-/user/:id/scripts   |   All scripts user committed to
-/manage/variables           |   Add variables to the system.
-
+/user/:id/scripts           |   All scripts user committed to
 /manage/commits/            |   For admins? Delete commits?
 /manage/users/              |   For admins?
 /manage/user                |   ?
@@ -1087,42 +1085,40 @@ def signature_api_commit(env):
         'timestamp' : commit.timestamp.ctime()
         }, indent=' ' * 4)]
 
-def graph_commits_month(env, month):
-    s = graph_commits_month_dyn(env, month)
+def graph_commits(env, month, year, scriptid, userid, select_type):
+    if select_type not in ('amount', 'minutes'):
+        select_type = 'amount'
+    s = graph_commits_month_dyn(env, month, year, scriptid, userid, select_type)
     if s is None:
         return None
     else:
         return ['graph', s]
 
-def graph_commits_month_user(env, month, userid):
-    s = graph_commits_month_dyn(env, month, userid=userid)
-    if s is None:
-        return None
-    else:
-        return ['graph', s]
-
-def graph_commits_month_script(env, month, scriptid):
-    s = graph_commits_month_dyn(env, month, scriptid=scriptid)
-    if s is None:
-        return None
-    else:
-        return ['graph', s]
-
-def graph_commits_month_user_script(env, month, scriptid, userid):
-    s = graph_commits_month_dyn(env, month, scriptid=scriptid, userid=userid)
-    if s is None:
-        return None
-    else:
-        return ['graph', s]
-
-def graph_commits_month_dyn(env, month, scriptid=None, userid=None,
-        select_type='amount'):
+def graph_commits_month_dyn(env, month=None, year=None,
+        scriptid=None, userid=None, select_type='amount'):
     """
         Generic function for month graphs.
+        If month is None, the current month is used.
+        If year is None, the current year is used.
         Valid select types: 'amount', 'minutes'
     """
-    month = int(month)
+    if select_type not in ('amount', 'minutes'):
+        return None
+
+    if month is None:
+        month = datetime.datetime.now().month
+    else:
+        month = int(month)
+
     if month < 1 or month > 12:
+        return None
+
+    if year is None:
+        year = datetime.datetime.now().year
+    else:
+        year = int(year)
+
+    if year < 1:
         return None
 
     if scriptid:
@@ -1153,6 +1149,7 @@ def graph_commits_month_dyn(env, month, scriptid=None, userid=None,
         q = q.filter(Commit.script_id==scriptid)
 
     q = q.filter(extract('month', Commit.timestamp)==month)
+    q = q.filter(extract('year', Commit.timestamp)==year)
     q = q.group_by(extract('day', Commit.timestamp))
 
     res = q.all()
