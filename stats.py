@@ -171,6 +171,27 @@ def stats(env, start_response):
 
     return [r]
 
+class SessionHackException(Exception):
+    """
+    Raised when something goes wrong.
+    """
+
+class SessionHack(object):
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, env, start_response):
+        try:
+            ret = self.app(env, start_response)
+        except Exception, e:
+            print 'Exception in SessionHack:', e.message
+            raise SessionHackException(e.message)
+        finally:
+            Session.rollback()
+
+        return ret
+
 def loggedin(env):
     """
         Return true when logged in.
@@ -1098,5 +1119,6 @@ if __name__ == '__main__':
 
     usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
-    WSGIServer(SessionMiddleware(stats, session_options)).run()
+    #WSGIServer(SessionMiddleware(stats,session_options)).run()
+    WSGIServer(SessionMiddleware(SessionHack(stats),session_options)).run()
     #WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()
