@@ -45,6 +45,11 @@ import simplejson as json
 from config import BASE_URL, RESULTS_PER_PAGE, \
     session_options
 
+
+# XXX: Perhaps move this to query. (Also move all commit extraction to query)
+from sqlalchemy import func
+from sqlalchemy import extract
+
 # Log levels
 LVL_ALWAYS = 0          # Will always be shown.
 LVL_NOTABLE = 42        # Notable information.
@@ -122,15 +127,23 @@ def template_render(template, vars, default_page=True):
 /manage/script/:scriptid    |   Show script vars. Allow people to add vars to
                             |   their script. (But not create not vars, nor
                             |   delete vars from their script)
+/manage/variables           |   Add variables to the system.
 
 /api/script/:id             |   Get script info in JSON
 /api/user/:id               |   Get user info in JSON
 /api/commit/last            |   Get last commit info in JSON
 
-TODO
-/user/:id/scripts   |   All scripts user committed to
-/manage/variables           |   Add variables to the system.
+/graph/commit/
+/graph/commit/month/:id
 
+/graph/script/:id/month:id
+/graph/script/:id/user/:id/month:id
+
+/graph/user/:id/month:id
+
+TODO
+
+/user/:id/scripts           |   All scripts user committed to
 /manage/commits/            |   For admins? Delete commits?
 /manage/users/              |   For admins?
 /manage/user                |   ?
@@ -159,7 +172,8 @@ def stats(env, start_response):
 
     # XXX: Remove statement in favour of the next
     elif type(r) in (tuple, list) and len(r) >= 1 and r[0] == 'graph':
-        start_response('200 OK', [('Content-Type', 'image/svg+xml')])
+        start_response('200 OK', [('Content-Type', 'image/png')])
+        #start_response('200 OK', [('Content-Type', 'image/svg+xml')])
         r = r[1]
     elif type(r) in (tuple, list) and len(r) >= 1:
         # response with custom type.
@@ -170,6 +184,27 @@ def stats(env, start_response):
         start_response('200 OK', [('Content-Type', 'text/html;charset=utf8')])
 
     return [r]
+
+class SessionHackException(Exception):
+    """
+    Raised when something goes wrong.
+    """
+
+class SessionHack(object):
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, env, start_response):
+        try:
+            ret = self.app(env, start_response)
+        except Exception, e:
+            print 'Exception in SessionHack:', e.message
+            raise SessionHackException(e.message)
+        finally:
+            Session.rollback()
+
+        return ret
 
 def loggedin(env):
     """
@@ -264,29 +299,30 @@ def script_graph(env, scriptid=None):
         Experimental function to generate graphs.
         Rather messy at the moment.
     """
-    sinfo = st.info(scriptid)
-    if sinfo is None:
-        return None
+    return None
+#    sinfo = st.info(scriptid)
+#    if sinfo is None:
+#        return None
+##
+#    vars = [(x[0], x[1].name) for x in sinfo['vars']]
+#    script = sinfo['script']
+##    from sqlalchemy import func
+##    vars = session.query(Script.name, User.name,
+##            func.sum(Commit.timeadd)).join((Commit, Commit.script_id ==
+##                Script.id)).join((User, User.id ==
+##                    Commit.user_id)).filter(Script.id==1).group_by(Script.name,
+##                            User.name).all()
+##
 #
-    vars = [(x[0], x[1].name) for x in sinfo['vars']]
-    script = sinfo['script']
-#    from sqlalchemy import func
-#    vars = session.query(Script.name, User.name,
-#            func.sum(Commit.timeadd)).join((Commit, Commit.script_id ==
-#                Script.id)).join((User, User.id ==
-#                    Commit.user_id)).filter(Script.id==1).group_by(Script.name,
-#                            User.name).all()
+#    fracs = []
+#    labels = []
 #
-
-    fracs = []
-    labels = []
-
-    for x in vars:
-        fracs.append(x[0])
-        #fracs.append(x[2])
-        labels.append(x[1])
-
-    s = gt.pie(fracs,labels,'Variables for %s' % script.name)
+#    for x in vars:
+#        fracs.append(x[0])
+#        #fracs.append(x[2])
+#        labels.append(x[1])
+#
+#    s = gt.pie(fracs,labels,'Variables for %s' % script.name)
     return ['graph', s]
 
 def commit(env, commitid=None):
@@ -886,7 +922,6 @@ def manage_variable(env, variableid):
                     'variable' : variable
                 })
 
-
     return template_render(tmpl,
         {   'session' : env['beaker.session'],
             'variable' : variable
@@ -1071,6 +1106,96 @@ def signature_api_commit(env):
         'timestamp' : commit.timestamp.ctime()
         }, indent=' ' * 4)]
 
+def graph_commits(env, month, year, scriptid, userid, select_type):
+    if select_type not in ('amount', 'minutes'):
+        select_type = 'amount'
+    s = graph_commits_month_dyn(env, month, year, scriptid, userid, select_type)
+    if s is None:
+        return None
+    else:
+        return ['graph', s]
+
+def graph_commits_month_dyn(env, month=None, year=None,
+        scriptid=None, userid=None, select_type='amount'):
+    """
+        Generic function for month graphs.
+        If month is None, the current month is used.
+        If year is None, the current year is used.
+        Valid select types: 'amount', 'minutes'
+    """
+    if select_type not in ('amount', 'minutes'):
+        return None
+
+    if month is None:
+        month = datetime.datetime.now().month
+    else:
+        month = int(month)
+
+    if month < 1 or month > 12:
+        return None
+
+    if year is None:
+        year = datetime.datetime.now().year
+    else:
+        year = int(year)
+
+    if year < 1:
+        return None
+
+    if scriptid:
+        script = st.info(scriptid)
+        if script is None:
+            return None
+
+    if userid:
+        user = ut.info(userid)
+        if user is None:
+            return None
+
+    sel = {'amount' : 
+                Session.query(extract('day', Commit.timestamp),
+                    func.count('*')),
+            'minutes':
+                Session.query(extract('day', Commit.timestamp),
+                    func.sum(Commit.timeadd))
+            }
+    if select_type not in sel:
+        return None
+
+    q = sel[select_type]
+
+    if userid:
+        q = q.filter(Commit.user_id==userid)
+    if scriptid:
+        q = q.filter(Commit.script_id==scriptid)
+
+    q = q.filter(extract('month', Commit.timestamp)==month)
+    q = q.filter(extract('year', Commit.timestamp)==year)
+    q = q.group_by(extract('day', Commit.timestamp))
+
+    res = q.all()
+
+    amount = range(32)
+    for x in range(32):
+        amount[x] = 0
+
+    for x in res:
+        amount[int(x[0])] = x[1]
+
+    if scriptid:
+        title = ' to script: %s' % script['script'].name
+    else:
+        title = ''
+
+    if userid:
+        title += ' by user: %s' % user['user'].name
+
+    s = gt.commit_bar(range(1,33), amount, 
+            _title='Commits per day' + title,
+            _xlabel='days', _ylabel='%s of commits' % select_type)
+
+    return s
+
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     jinjaenv.autoescape = True
@@ -1098,5 +1223,6 @@ if __name__ == '__main__':
 
     usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
-    WSGIServer(SessionMiddleware(stats, session_options)).run()
+    #WSGIServer(SessionMiddleware(stats,session_options)).run()
+    WSGIServer(SessionMiddleware(SessionHack(stats),session_options)).run()
     #WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()
