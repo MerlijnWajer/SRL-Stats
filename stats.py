@@ -153,7 +153,6 @@ def stats(env, start_response):
     """
         Main function. Handles all the requests.
     """
-    print 'SQLAlchemy Session:', Session()
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
             (env['REQUEST_URI'], env['REMOTE_ADDR']))
 
