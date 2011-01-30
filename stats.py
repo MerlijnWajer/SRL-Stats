@@ -523,6 +523,9 @@ def api_commit(env):
 
     data = read_post_data(env)
 
+    if data is None:
+        return None
+
     # XXX FIXME This is ugly
     pd = data.copy()
     pd['password'] = 'xxxxxxxx'
