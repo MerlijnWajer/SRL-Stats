@@ -49,6 +49,7 @@ from config import BASE_URL, RESULTS_PER_PAGE, \
 # XXX: Perhaps move this to query. (Also move all commit extraction to query)
 from sqlalchemy import func
 from sqlalchemy import extract
+import sqlalchemy
 
 # Log levels
 LVL_ALWAYS = 0          # Will always be shown.
