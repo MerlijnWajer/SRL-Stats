@@ -1009,7 +1009,7 @@ def register_user(env):
 
         # Does the user exist?
         res =  session.query(User).filter(User.name ==
-                data['user']).filter(User.password == data['pass']).first()
+                data['user']).first()
 
         if res:
             return template_render(tmpl,
