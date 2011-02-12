@@ -600,18 +600,29 @@ def api_commit(env):
 
     del data['time']
 
+    randoms = session.query(Variable).filter(Variable.is_var==0).all()
+
     script_vars = dict(zip([x.name.lower() for x in script.variables], 
         script.variables))
 
-    randoms = session.query(Variable).filter(Variable.is_var==0).all()
-    r = dict(zip([x.name.lower() for x in randoms], randoms))
-    script_vars.update(r)
+    script_vars.update(dict(zip([x.name.lower() for x in randoms], randoms)))
+
+    script_vars.update(dict(zip([x.id for x in randoms], randoms)))
+
+    script_vars.update(dict(zip([x.id for x in script.variables],
+        script.variables)))
 
     vars = dict()
 
     for x, y in data.iteritems():
         x = urllib.unquote_plus(x)
         x = x.lower()
+
+        try:
+            x = int(x)
+        except ValueError:
+            pass
+
         if x not in script_vars:
             log.log([], LVL_NOTABLE, PyLogger.WARNING,
                 'API_COMMIT: %s, %s DENIED: Invalid variable for script' \
@@ -627,8 +638,8 @@ def api_commit(env):
 
         if v < 1:
             log.log([], LVL_NOTABLE, PyLogger.WARNING,
-                'API_COMMIT: %s, %s DENIED: Invalid variable value (0)' \
-                        % (env['REMOTE_ADDR'], pd))
+                'API_COMMIT: %s, %s DENIED: Invalid variable value (%d)' \
+                        % (env['REMOTE_ADDR'], pd, v))
             continue
             # XXX: Add this eventually
             # return '150'
