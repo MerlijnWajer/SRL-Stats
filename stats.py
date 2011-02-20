@@ -838,7 +838,7 @@ def create_variable(env):
             return template_render(tmpl, { 'session' : env ['beaker.session'],
                 'error' : 'Error: Variable name not specified'})
 
-        if len(s) == 0 or len(s) > 20:
+        if len(s) == 0 or len(s) > 60:
             return template_render(tmpl, { 'session' : env ['beaker.session'],
                 'error' : 'Error: Variable name has invalid length'})
 
