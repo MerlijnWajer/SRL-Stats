@@ -99,7 +99,7 @@ class Variable(Base):
     __tablename__ = 'variables'
 
     id = Column(Integer, primary_key=True)
-    name = Column(Unicode(30), unique=True)
+    name = Column(Unicode(60), unique=True)
 
     # TODO -> turn to boolean?
     is_var = Column(Integer, nullable=False)
