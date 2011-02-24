@@ -49,6 +49,7 @@ from config import BASE_URL, RESULTS_PER_PAGE, \
 # XXX: Perhaps move this to query. (Also move all commit extraction to query)
 from sqlalchemy import func
 from sqlalchemy import extract
+import sqlalchemy
 
 # Log levels
 LVL_ALWAYS = 0          # Will always be shown.
@@ -153,7 +154,6 @@ def stats(env, start_response):
     """
         Main function. Handles all the requests.
     """
-    print 'SQLAlchemy Session:', Session()
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
             (env['REQUEST_URI'], env['REMOTE_ADDR']))
 
@@ -523,6 +523,9 @@ def api_commit(env):
 
     data = read_post_data(env)
 
+    if data is None:
+        return None
+
     # XXX FIXME This is ugly
     pd = data.copy()
     pd['password'] = 'xxxxxxxx'
@@ -597,18 +600,29 @@ def api_commit(env):
 
     del data['time']
 
+    randoms = session.query(Variable).filter(Variable.is_var==0).all()
+
     script_vars = dict(zip([x.name.lower() for x in script.variables], 
         script.variables))
 
-    randoms = session.query(Variable).filter(Variable.is_var==0).all()
-    r = dict(zip([x.name.lower() for x in randoms], randoms))
-    script_vars.update(r)
+    script_vars.update(dict(zip([x.name.lower() for x in randoms], randoms)))
+
+    script_vars.update(dict(zip([x.id for x in randoms], randoms)))
+
+    script_vars.update(dict(zip([x.id for x in script.variables],
+        script.variables)))
 
     vars = dict()
 
     for x, y in data.iteritems():
         x = urllib.unquote_plus(x)
         x = x.lower()
+
+        try:
+            x = int(x)
+        except ValueError:
+            pass
+
         if x not in script_vars:
             log.log([], LVL_NOTABLE, PyLogger.WARNING,
                 'API_COMMIT: %s, %s DENIED: Invalid variable for script' \
@@ -624,8 +638,8 @@ def api_commit(env):
 
         if v < 1:
             log.log([], LVL_NOTABLE, PyLogger.WARNING,
-                'API_COMMIT: %s, %s DENIED: Invalid variable value (0)' \
-                        % (env['REMOTE_ADDR'], pd))
+                'API_COMMIT: %s, %s DENIED: Invalid variable value (%d)' \
+                        % (env['REMOTE_ADDR'], pd, v))
             continue
             # XXX: Add this eventually
             # return '150'
@@ -824,7 +838,7 @@ def create_variable(env):
             return template_render(tmpl, { 'session' : env ['beaker.session'],
                 'error' : 'Error: Variable name not specified'})
 
-        if len(s) == 0 or len(s) > 20:
+        if len(s) == 0 or len(s) > 60:
             return template_render(tmpl, { 'session' : env ['beaker.session'],
                 'error' : 'Error: Variable name has invalid length'})
 
@@ -1006,7 +1020,7 @@ def register_user(env):
 
         # Does the user exist?
         res =  session.query(User).filter(User.name ==
-                data['user']).filter(User.password == data['pass']).first()
+                data['user']).first()
 
         if res:
             return template_render(tmpl,
