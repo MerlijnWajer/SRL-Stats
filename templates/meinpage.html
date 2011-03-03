@@ -33,7 +33,7 @@
         <ul>
         {% for commit in own_commits %}
             <li>
-            To {{ commit.script.id }} on {{ commit.timestamp.ctime() }}
+            To {{ commit.script.name}} on {{ commit.timestamp.ctime() }}
             and adds {{ commit.timeadd}} minutes of time.
             </li>
         {% endfor %}
@@ -41,10 +41,11 @@
     {% endif %}
 
     {% if script_commits %}
+        <p> Recent commits to scripts owned by you: </p>
         <ul>
         {% for commit in script_commits %}
             <li>
-            To {{ commit.script.id }} by {{ commit.user.name }}
+            To {{ commit.script.name }} by {{ commit.user.name }}
             on {{ commit.timestamp.ctime() }} and adds
             {{ commit.timeadd}} minutes of time.
             </li>
