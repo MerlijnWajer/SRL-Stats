@@ -221,13 +221,23 @@ def general(env):
     if loggedin(env):
         tmpl = jinjaenv.get_template('meinpage.html')
 
-        userinfo = ut.info(env['beaker.session']['loggedin_id'])
+        userid = env['beaker.session']['loggedin_id']
+
+        userinfo = ut.info(userid)
+
+        user_commits =  Session.query(Commit).filter(Commit.user_id == userid
+                ). order_by(desc(Commit.id)).limit(5).all()
+
+        script_commits = Session.query(Commit).filter(Script.owner_id ==
+                userid).order_by(desc(Commit.id)).limit(5).all()
 
         return template_render(tmpl,
                {'session' : env['beaker.session'],
                 'user' : userinfo['user'],
                 'ttc' : userinfo['time']['commit_time'],
-                'tc' : userinfo['time']['commit_amount']
+                'tc' : userinfo['time']['commit_amount'],
+                'own_commits' : user_commits,
+                'script_commits' : script_commits
                })
 
     else:

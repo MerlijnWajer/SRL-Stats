@@ -27,4 +27,29 @@
     <a href="{{baseurl}}/manage/script/new"> Create one now</a>
     </p>
     {% endif %}
+
+    {% if own_commits %}
+        <p> Recent commits by you: </p>
+        <ul>
+        {% for commit in own_commits %}
+            <li>
+            To {{ commit.script.id }} on {{ commit.timestamp.ctime() }}
+            and adds {{ commit.timeadd}} minutes of time.
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if script_commits %}
+        <ul>
+        {% for commit in script_commits %}
+            <li>
+            To {{ commit.script.id }} by {{ commit.user.name }}
+            on {{ commit.timestamp.ctime() }} and adds
+            {{ commit.timeadd}} minutes of time.
+            </li>
+        {% endfor %}
+        </ul>
+
+    {% endif %}
 {% endblock %}
