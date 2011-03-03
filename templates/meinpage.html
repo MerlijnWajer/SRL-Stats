@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}
+    Personal Page of: {{ user.name }}
+{% endblock %}
+
+{% block content %}
+    <h1> Welcome, {{ user.name }} </h1>
+    <p> Your ID is: {{ user.id }} </p>
+
+    <p>You have {{ user.name}} committed a total time of
+    {{ _import['datetime'].timedelta(minutes=ttc) }}
+    in {{ tc }} commits. </p>
+
+    {% if user.scripts %}
+        <p> Your scripts: </p>
+        <ul>
+        {% for script in user.scripts %}
+        <li>
+        <a href="{{baseurl}}/script/{{ script.id }}">
+            {{ script.name }} </a>
+        <a href="{{baseurl}}/manage/script/{{ script.id }}">(Manage)</a>
+        </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+    <p> You do not own any scripts yet,
+    <a href="{{baseurl}}/manage/script/new"> Create one now</a>
+    </p>
+    {% endif %}
+{% endblock %}
