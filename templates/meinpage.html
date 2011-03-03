@@ -5,7 +5,8 @@
 
 {% block content %}
     <h1> Welcome, {{ user.name }} </h1>
-    <p> Your ID is: {{ user.id }} </p>
+    <p> Your ID is: <a href="{{baseurl}}/user/{{ user.id }} ">
+        {{user.id}}</a></p>
 
     <p>You have {{ user.name}} committed a total time of
     {{ _import['datetime'].timedelta(minutes=ttc) }}
