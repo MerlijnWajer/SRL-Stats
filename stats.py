@@ -1041,7 +1041,9 @@ def register_user(env):
             print 'Exception:', e
 
         return template_render(tmpl,
-            { 'session' : env['beaker.session'], 'registersuccess' : True} )
+            { 'session' : env['beaker.session'],
+               'registersuccess' : True,
+               'user' : user} )
 
     elif str(env['REQUEST_METHOD']) == 'GET':
         return template_render(tmpl,
