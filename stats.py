@@ -228,8 +228,10 @@ def general(env):
         user_commits =  Session.query(Commit).filter(Commit.user_id == userid
                 ). order_by(sqlalchemy.desc(Commit.id)).limit(5).all()
 
-        script_commits = Session.query(Commit).filter(Script.owner_id ==
-                userid).order_by(sqlalchemy.desc(Commit.id)).limit(5).all()
+        script_commits = Session.query(Commit).join(
+                (Script, Script.id == Commit.script_id)).filter(
+                 Script.owner_id == userid).order_by(
+                 sqlalchemy.desc(Commit.id)).limit(5).all()
 
         return template_render(tmpl,
                {'session' : env['beaker.session'],
