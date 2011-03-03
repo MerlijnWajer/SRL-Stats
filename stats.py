@@ -218,9 +218,22 @@ def general(env):
     """
         Default page.
     """
-    tmpl = jinjaenv.get_template('base.html')
+    if loggedin(env):
+        tmpl = jinjaenv.get_template('meinpage.html')
 
-    return template_render(tmpl, {'session' : env['beaker.session']} )
+        userinfo = ut.info(env['beaker.session']['loggedin_id'])
+
+        return template_render(tmpl,
+               {'session' : env['beaker.session'],
+                'user' : userinfo['user'],
+                'ttc' : userinfo['time']['commit_time'],
+                'tc' : userinfo['time']['commit_amount']
+               })
+
+    else:
+        tmpl = jinjaenv.get_template('base.html')
+
+        return template_render(tmpl, {'session' : env['beaker.session']} )
 
 def user(env, userid=None):
     """
