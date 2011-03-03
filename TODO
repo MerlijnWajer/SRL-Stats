@@ -2,16 +2,15 @@ TODO:
     -   Delete / clean tools
     -   Fix unicode warnings.
     -   Implement searches.
-    -   Give the user a permanent link to his acccount; on register.
-    -   Redirect to the user to his own account; on login.
+
     -   On commits; use IDs for variables instead of names? / Also allow ID's?
+            [Implemented, but should be removed again IMO]
+
     -   Implement ranking system. With temporary tables?
     -   Implement favicon.ico / support for static files.
-    -   Add optionparser for logfiles, etc.
-    -   My Commits page?
-    -   Customized page if you're logged in? Recent commit by you, recent
-        commits to your scripts?
     -   Images per variable?
+
+    -   Add optionparser for logfiles, etc.
 
     -   Pages and graphs for Variables.
         -   Per users (pie)
