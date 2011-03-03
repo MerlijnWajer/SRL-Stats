@@ -485,7 +485,8 @@ def login(env):
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
             return template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginsuccess' : True} )
+            {   'session' : env['beaker.session'], 'loginsuccess' : True,
+                'user' : res} )
         else:
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Failed login %s : %s' % (env['REMOTE_ADDR'], data['user']))
