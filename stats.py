@@ -724,6 +724,9 @@ def manage_script(env, scriptid):
     if not script:
         return None
 
+    if script.owner != user.name:
+        return None
+
     if str(env['REQUEST_METHOD']) == 'POST':
             data = read_post_data(env)
 
