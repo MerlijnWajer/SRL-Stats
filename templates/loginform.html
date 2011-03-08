@@ -7,8 +7,14 @@
 {% block content %}
 
     {% if loginsuccess %}
-        <p> You are now logged in. </p>
-    {% elif loginfail %} 
+
+    <p> You are now logged in. </p>
+    <p> Redirecting you to your own
+    <a href="{{baseurl}}/user/{{user.id}}">page</a>
+    in 5 seconds... </p>
+    <meta http-equiv="refresh" content="5 ;URL={{baseurl}}/" />
+
+    {% elif loginfail %}
         <p> Invalid username or password. </p>
     {% else %}
         {% if session and session['loggedin'] %}
@@ -21,7 +27,7 @@
             <br/>
             <input type="submit" value="Log in"> </input>
         </form>
-    
+
         {% endif %}
     {% endif %}
 

@@ -218,9 +218,34 @@ def general(env):
     """
         Default page.
     """
-    tmpl = jinjaenv.get_template('base.html')
+    if loggedin(env):
+        tmpl = jinjaenv.get_template('meinpage.html')
 
-    return template_render(tmpl, {'session' : env['beaker.session']} )
+        userid = env['beaker.session']['loggedin_id']
+
+        userinfo = ut.info(userid)
+
+        user_commits =  Session.query(Commit).filter(Commit.user_id == userid
+                ). order_by(sqlalchemy.desc(Commit.id)).limit(5).all()
+
+        script_commits = Session.query(Commit).join(
+                (Script, Script.id == Commit.script_id)).filter(
+                 Script.owner_id == userid).order_by(
+                 sqlalchemy.desc(Commit.id)).limit(5).all()
+
+        return template_render(tmpl,
+               {'session' : env['beaker.session'],
+                'user' : userinfo['user'],
+                'ttc' : userinfo['time']['commit_time'],
+                'tc' : userinfo['time']['commit_amount'],
+                'own_commits' : user_commits,
+                'script_commits' : script_commits
+               })
+
+    else:
+        tmpl = jinjaenv.get_template('base.html')
+
+        return template_render(tmpl, {'session' : env['beaker.session']} )
 
 def user(env, userid=None):
     """
@@ -485,7 +510,8 @@ def login(env):
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Login %s : %s' % (env['REMOTE_ADDR'], data['user']))
             return template_render(tmpl,
-            {   'session' : env['beaker.session'], 'loginsuccess' : True} )
+            {   'session' : env['beaker.session'], 'loginsuccess' : True,
+                'user' : res} )
         else:
             log.log([], LVL_NOTABLE, PyLogger.INFO,
                     'Failed login %s : %s' % (env['REMOTE_ADDR'], data['user']))
@@ -696,6 +722,9 @@ def manage_script(env, scriptid):
     script = session.query(Script).filter(Script.id == scriptid).first()
 
     if not script:
+        return None
+
+    if script.owner != user.name:
         return None
 
     if str(env['REQUEST_METHOD']) == 'POST':
@@ -1041,7 +1070,9 @@ def register_user(env):
             print 'Exception:', e
 
         return template_render(tmpl,
-            { 'session' : env['beaker.session'], 'registersuccess' : True} )
+            { 'session' : env['beaker.session'],
+               'registersuccess' : True,
+               'user' : user} )
 
     elif str(env['REQUEST_METHOD']) == 'GET':
         return template_render(tmpl,

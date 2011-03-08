@@ -7,7 +7,10 @@
 {% block content %}
 
     {% if registersuccess %}
-        <p> You are now registered. </p>
+    <p> You are now registered. </p>
+    <p> You can find your account
+        <a href="{{baseurl}}/user/{{user.id}}">here</a>
+    </p>
     {% elif registerfail %} 
         <p> Invalid username or password. (Either it doesn't comply with the
         requirements below, or the username already exists)
