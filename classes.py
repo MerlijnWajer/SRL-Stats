@@ -17,7 +17,7 @@ class User(Base):
         The User object represents a user.
         It has a name, password and date registered.
         Associated with the user are 'scripts' and 'commits'.
-        
+
         Scripts consists of the scripts owned by the user,
         Commits consists of the commits submitted by the user.
     """
@@ -81,7 +81,7 @@ class Commit(Base):
     user = relationship(User, backref=backref('commits', order_by=id))
     script = relationship(Script, backref=backref('commits', order_by=id))
     # commitvars = vars for this commit
-    
+
     def __init__(self, timeadd):
         self.timeadd = timeadd
 
@@ -122,7 +122,7 @@ class CommitVar(Base):
 
     id = None # Works?
     commit_id = Column(Integer, ForeignKey('commits.id'),primary_key=True)
-    
+
     variable_id = Column(Integer, ForeignKey('variables.id'),primary_key=True)
     amount = Column(Integer, nullable=False)
 

@@ -15,11 +15,11 @@ def fig_to_data(fig):
 
 
 class GraphTool(object):
-    
+
     def __init__(self):
         pass
 
-    def commit_bar(self, _time, amount, _title='Unknown title', 
+    def commit_bar(self, _time, amount, _title='Unknown title',
             _xlabel = 'Unknown time type', _ylabel='Unknown amount type'):
         """
             Generate a bar plot with <time> on X, amount on Y.
@@ -36,7 +36,7 @@ class GraphTool(object):
         h.set_xbound(_time[0], _time[len(_time)-1])
         h.set_ybound(0, int(max(amount)))
         h.set_axis_bgcolor('#FFFFFF')
-        
+
         h.set_title(_title)
 
         return fig_to_data(canvas)
