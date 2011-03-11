@@ -7,10 +7,6 @@ Then, based on the URL; a template is loaded and required variables are
 loaded.
 """
 
-# Routes:
-# /graph for graphs? (filetype png/svg?)
-# /var for var pages ex: /var/42
-
 # HAX.
 import os
 os.environ['MPLCONFIGDIR'] = '/tmp'
@@ -44,7 +40,6 @@ import simplejson as json
 # Import config
 from config import BASE_URL, RESULTS_PER_PAGE, \
     session_options
-
 
 # XXX: Perhaps move this to query. (Also move all commit extraction to query)
 from sqlalchemy import func
@@ -724,7 +719,7 @@ def manage_script(env, scriptid):
     if not script:
         return None
 
-    if script.owner != user.name:
+    if script.owner.name != user.name:
         return None
 
     if str(env['REQUEST_METHOD']) == 'POST':
@@ -994,7 +989,7 @@ def manage_variables(env, pageid):
     variables =  Session.query(Variable).order_by(Variable.id).offset(\
             (pageid-1) * RESULTS_PER_PAGE).limit(RESULTS_PER_PAGE).all()
 
-    return template_render(tmpl, 
+    return template_render(tmpl,
         {   'session' : env ['beaker.session'],
             'variables' : variables,
             'pageid' : pageid,
@@ -1197,7 +1192,7 @@ def graph_commits_month_dyn(env, month=None, year=None,
         if user is None:
             return None
 
-    sel = {'amount' : 
+    sel = {'amount' :
                 Session.query(extract('day', Commit.timestamp),
                     func.count('*')),
             'minutes':
@@ -1235,7 +1230,7 @@ def graph_commits_month_dyn(env, month=None, year=None,
     if userid:
         title += ' by user: %s' % user['user'].name
 
-    s = gt.commit_bar(range(1,33), amount, 
+    s = gt.commit_bar(range(1,33), amount,
             _title='Commits per day' + title,
             _xlabel='days', _ylabel='%s of commits' % select_type)
 
