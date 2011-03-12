@@ -213,6 +213,7 @@ class ScheduledJob(object):
     def __call__(self, env, start_response):
         if time.time() - last_rank_time > 3600: # One hour
             update_user_ranking()
+            last_rank_time = time.time()
 
         return self.app(env, start_response)
 
