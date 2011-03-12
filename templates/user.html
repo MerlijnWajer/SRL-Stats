@@ -5,9 +5,9 @@
 
 {% block content %}
     <h1>
-        User: {{ user.name }}
+        User: {{ user.name }} is ranked {{ user.rank }}
     </h1>
-    <p>{{ user.name}} has committed a total time of 
+    <p> {{user.name}} has committed a total time of 
     {{ _import['datetime'].timedelta(minutes=ttc) }}
     in {{ tc }} commits. </p>
     {% if user.scripts %}

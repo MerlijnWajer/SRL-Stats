@@ -13,7 +13,10 @@ os.environ['MPLCONFIGDIR'] = '/tmp'
 
 from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
-from sql import User, Script, Variable, Commit, CommitVar, Base, Session
+
+from sql import User, Script, Variable, Commit, CommitVar, Base, \
+        Session
+
 from webtool import WebTool, read_post_data
 
 # Import UserTool
@@ -22,6 +25,7 @@ from graph import GraphTool
 
 # For date & time utils
 import datetime
+import time
 
 # For unquote
 import urllib
@@ -200,6 +204,17 @@ class SessionHack(object):
             Session.rollback()
 
         return ret
+
+class ScheduledJob(object):
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, env, start_response):
+        if time.time() - last_rank_time > 3600: # One hour
+            update_user_ranking()
+
+        return self.app(env, start_response)
 
 def loggedin(env):
     """
@@ -1120,6 +1135,7 @@ def signature_api_user(env, userid):
 
     return ['text/plain', json.dumps({
             'user' : info['user'].name,
+            'rank' : info['user'].rank,
             'time' : info['time']['commit_time'],
             'commits' : info['time']['commit_amount'],
             'last_commit_on:' : last_commit.timestamp.ctime() if last_commit
@@ -1236,6 +1252,30 @@ def graph_commits_month_dyn(env, month=None, year=None,
 
     return s
 
+
+def update_user_ranking():
+    """
+        Update user rankings.
+    """
+
+    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user ranks...')
+    session = Session()
+
+    users = ut.top(0, 0)
+
+    rank = 1
+    for x in users:
+        x[0].rank = rank
+
+        session.add(x[0])
+
+        rank += 1
+
+    session.commit()
+
+    del session
+    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user ranks...')
+
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     jinjaenv.autoescape = True
@@ -1245,6 +1285,9 @@ if __name__ == '__main__':
     ct = CommitTool(Session)
     vt = VariableTool(Session)
     gt = GraphTool()
+
+    # Set it to zero so we schedule it right away. (the first time)
+    last_rank_time = 0
 
     from log import PyLogger
 
@@ -1264,5 +1307,6 @@ if __name__ == '__main__':
     usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
     #WSGIServer(SessionMiddleware(stats,session_options)).run()
-    WSGIServer(SessionMiddleware(SessionHack(stats),session_options)).run()
+    WSGIServer(SessionMiddleware(SessionHack(ScheduledJob(stats)), \
+            session_options)).run()
     #WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()

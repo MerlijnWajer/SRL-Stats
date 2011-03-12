@@ -10,7 +10,9 @@
 
     <p>You have {{ user.name}} committed a total time of
     {{ _import['datetime'].timedelta(minutes=ttc) }}
-    in {{ tc }} commits. </p>
+    in {{ tc }} commits. <br/>
+    Your rank is {{ user.rank }}.
+    </p>
 
     {% if user.scripts %}
         <p> Your scripts: </p>

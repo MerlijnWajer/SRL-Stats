@@ -8,12 +8,16 @@
 
         <table>
             <tr>
+                <th> User Rank </th>
                 <th> User ID </th>
                 <th> User Name </th>
                 <th> Total Time (Minutes) </th>
             </tr>
         {% for user, utime in users %}
             <tr>
+                <td>
+                    {{ user.rank }}
+                </td>
                 <td>
                     {{ user.id }}
                 </td>

@@ -26,10 +26,15 @@ class UserTool(StatsTool):
         """
         coales = (func.coalesce(func.sum(Commit.timeadd), \
                 literal_column('0'))).label('TimeAdd')
-        return self.s.query(User, coales).outerjoin(
+        obj = self.s.query(User, coales).outerjoin(
             (Commit, Commit.user_id == User.id)).group_by(
              User).order_by(desc(coales),asc(User.id)).offset(
-                     _offset).limit(_limit).all()
+                     _offset)
+
+        if _limit > 0:
+            obj = obj.limit(_limit)
+
+        return obj.all()
 
     def info(self, uid):
         """
@@ -130,10 +135,15 @@ class ScriptTool(StatsTool):
         coales = (func.coalesce(func.sum(Commit.timeadd), \
                 literal_column('0'))).label('TimeAdd')
 
-        return self.s.query(Script.name, Script.id, coales).outerjoin(
+        obj = self.s.query(Script.name, Script.id, coales).outerjoin(
                 (Commit, Commit.script_id == Script.id)).group_by(
              Script.name, Script.id).order_by(desc(coales),
-                 asc(Script.id)).offset(_offset).limit(_limit).all()
+                 asc(Script.id)).offset(_offset)
+
+        if _limit > 0:
+            obj = obj.limit(_limit)
+
+        return obj.all()
 
     def info(self, sid):
         """
@@ -185,8 +195,12 @@ class CommitTool(StatsTool):
             Return the newest commits (ordered by the time they were added, or
             rather; by their id; descending.
         """
-        return self.s.query(Commit).order_by(desc(Commit.id)).offset(
-            _offset).limit(_limit).all()
+        obj = self.s.query(Commit).order_by(desc(Commit.id)).offset(
+            _offset)
+        if _limit > 0:
+            obj = obj.limit(_limit)
+
+        return obj.all()
 
     def info(self, cid):
         """
@@ -248,7 +262,11 @@ class VariableTool(StatsTool):
         if only_vars:
             obj = obj.filter(Variable.is_var==1)
         obj = obj.group_by(Variable).order_by(desc(coales),
-            asc(Variable.id)).offset(_offset).limit(_limit)
+            asc(Variable.id)).offset(_offset)
+
+        if _limit > 0:
+            obj = obj.limit(_limit)
+
         return obj.all()
 
     def info(self, variableid):

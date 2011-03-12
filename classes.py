@@ -32,6 +32,9 @@ class User(Base):
     # scripts = user owned scripts
     # commits = user owned commits
 
+    # rank
+    rank = Column(Integer, default=0)
+
     def __init__(self, name, password, mail=None):
         self.name = name
         self.password = password
