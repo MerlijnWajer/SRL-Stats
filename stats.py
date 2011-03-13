@@ -214,8 +214,8 @@ class ScheduledJob(object):
         global last_rank_time
 
         if time.time() - last_rank_time > 3600: # One hour
-            update_user_ranking()
             last_rank_time = time.time()
+            update_user_ranking()
 
         return self.app(env, start_response)
 
