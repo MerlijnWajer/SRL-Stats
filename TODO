@@ -2,11 +2,11 @@ TODO:
     -   Delete / clean tools
     -   Fix unicode warnings.
     -   Implement searches.
+    -   Implement IP ban system.
 
     -   On commits; use IDs for variables instead of names? / Also allow ID's?
             [Implemented, but should be removed again IMO]
 
-    -   Implement ranking system. With temporary tables?
     -   Implement favicon.ico / support for static files.
     -   Images per variable?
 
