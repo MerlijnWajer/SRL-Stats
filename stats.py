@@ -219,6 +219,7 @@ class ScheduledJob(object):
 
         return self.app(env, start_response)
 
+
 def loggedin(env):
     """
         Return true when logged in.
@@ -1250,7 +1251,7 @@ def graph_commits_month_dyn(env, month=None, year=None,
         title += ' by user: %s' % user['user'].name
 
     s = gt.commit_bar(range(1,33), amount,
-            _title='Commits per day' + title,
+            _title='Commits per month' + title,
             _xlabel='days', _ylabel='%s of commits' % select_type)
 
     return s
