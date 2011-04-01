@@ -1315,7 +1315,7 @@ def update_user_script_variable_cache():
     """
     """
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user-script-variable'
-        'cache...')
+        ' cache...')
     session = Session()
 
     update_query = str(session.query(User.id, Script.id, Variable.id,
@@ -1332,7 +1332,7 @@ def update_user_script_variable_cache():
 
     del session
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user-script-variable'
-        'cache...')
+        ' cache...')
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
