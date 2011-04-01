@@ -4,7 +4,8 @@
 """
 # Find exact depends?
 from sqlalchemy import *
-from classes import User, Script, Variable, Commit, CommitVar
+from classes import User, Script, Variable, Commit, CommitVar, \
+    UserScriptCache, UserScriptVariableCache
 
 class StatsTool(object):
     def __init__(self, sess):
@@ -20,23 +21,32 @@ class UserTool(StatsTool):
         caching mechanism or not.
     """
 
-    def top(self, _offset=0,_limit=10):
+    def top(self, _offset=0,_limit=10, cache=False):
         """
             Return the top *limit* users based on time added.
         """
-        coales = (func.coalesce(func.sum(Commit.timeadd), \
+
+        if cache:
+            coales = (func.coalesce(func.sum(UserScriptCache.time_sum), \
                 literal_column('0'))).label('TimeAdd')
-        obj = self.s.query(User, coales).outerjoin(
-            (Commit, Commit.user_id == User.id)).group_by(
-             User).order_by(desc(coales),asc(User.id)).offset(
-                     _offset)
+            obj = self.s.query(User, coales).outerjoin(
+                    (UserScriptCache, UserScriptCache.user_id == User.id))
+        else:
+            coales = (func.coalesce(func.sum(Commit.timeadd), \
+                literal_column('0'))).label('TimeAdd')
+            obj = self.s.query(User, coales).outerjoin(
+                (Commit, Commit.user_id == User.id))
+
+        obj = obj.group_by(User)
+        obj = obj.order_by(desc(coales),asc(User.id))
+        obj = obj.offset(_offset)
 
         if _limit > 0:
             obj = obj.limit(_limit)
 
         return obj.all()
 
-    def info(self, uid):
+    def info(self, uid, cache=False):
         """
             Returns the user object with id *uid* and the time and commit count
             of the user.
@@ -45,7 +55,13 @@ class UserTool(StatsTool):
         if user is None:
             return None
 
-        time = self.s.query(func.count(Commit.timeadd),
+        if cache:
+            res = self.s.query(func.sum(UserScriptCache.commit_amount),
+                    func.sum(UserScriptCache.time_sum)).filter(
+                UserScriptCache.user_id == uid).group_by(UserScriptCache.user_id).first()
+            time = res
+        else:
+            time = self.s.query(func.count(Commit.timeadd),
                 func.sum(Commit.timeadd)).join(
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
@@ -128,17 +144,25 @@ class ScriptTool(StatsTool):
         commits made to a script.
     """
 
-    def top(self, _offset=0, _limit=10):
+    def top(self, _offset=0, _limit=10, cache=False):
         """
             Return the top scripts; based on the time committed to the script.
         """
-        coales = (func.coalesce(func.sum(Commit.timeadd), \
-                literal_column('0'))).label('TimeAdd')
 
-        obj = self.s.query(Script.name, Script.id, coales).outerjoin(
-                (Commit, Commit.script_id == Script.id)).group_by(
-             Script.name, Script.id).order_by(desc(coales),
-                 asc(Script.id)).offset(_offset)
+        if cache:
+            coales = (func.coalesce(func.sum(UserScriptCache.time_sum), \
+                    literal_column('0'))).label('TimeAdd')
+            obj = self.s.query(Script.name, Script.id, coales).outerjoin(
+                    (UserScriptCache, UserScriptCache.script_id == Script.id))
+        else:
+            coales = (func.coalesce(func.sum(Commit.timeadd), \
+                    literal_column('0'))).label('TimeAdd')
+            obj = self.s.query(Script.name, Script.id, coales).outerjoin(
+                    (Commit, Commit.script_id == Script.id))
+
+        obj = obj.group_by(Script.name, Script.id)
+        obj = obj.order_by(desc(coales),asc(Script.id))
+        obj = obj.offset(_offset)
 
         if _limit > 0:
             obj = obj.limit(_limit)
@@ -250,17 +274,26 @@ class VariableTool(StatsTool):
         variable specific information.
     """
 
-    def top(self, _offset=0, _limit=10, only_vars=False):
+    def top(self, _offset=0, _limit=10, only_vars=False, cache=False):
         """
             Return the top Variables.
         """
-        coales = (func.coalesce(func.sum(CommitVar.amount), \
-                literal_column('0'))).label('AmountSum')
 
-        obj = self.s.query(Variable, coales).outerjoin(
+        if cache:
+            coales = (func.coalesce(func.sum(UserScriptVariableCache.amount), \
+                literal_column('0'))).label('AmountSum')
+            obj = self.s.query(Variable, coales).outerjoin(
+                    (UserScriptVariableCache,
+                     UserScriptVariableCache.variable_id == Variable.id))
+        else:
+            coales = (func.coalesce(func.sum(CommitVar.amount), \
+                literal_column('0'))).label('AmountSum')
+            obj = self.s.query(Variable, coales).outerjoin(
                 (CommitVar, Variable.id == CommitVar.variable_id))
+
         if only_vars:
             obj = obj.filter(Variable.is_var==1)
+
         obj = obj.group_by(Variable).order_by(desc(coales),
             asc(Variable.id)).offset(_offset)
 
