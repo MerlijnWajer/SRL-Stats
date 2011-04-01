@@ -139,3 +139,43 @@ class CommitVar(Base):
     def __repr__(self):
         return 'CommitVar(%s, %s, %s)' % (self.amount, self.commit,
                 self.variable)
+
+class UserScriptCache(Base):
+    """
+    """
+    __tablename__ = 'uscache'
+
+    id = None
+    user_id = Column(Integer, primary_key=True)
+    script_id = Column(Integer, primary_key=True)
+    time_sum = Column(Integer)
+
+    def __init__(self, user_id, script_id, time_sum):
+        self.user_id = user_id
+        self.script_id = script_id
+        self.time_sum = time_sum
+
+    def __repr__(self):
+        return 'USC(%s, %s, %d)' % (self.user_id, self.script_id,
+                self.time_sum)
+
+class UserScriptVariableCache(Base): # Differs from UserScriptCache
+    """
+    """
+    __tablename__ = 'usvcache'
+
+    id = None
+    user_id = Column(Integer, primary_key=True)
+    script_id = Column(Integer, primary_key=True)
+    variable_id = Column(Integer, primary_key=True)
+    amount = Column(Integer)
+
+    def __init__(self, user_id, script_id, variable_id, amount):
+        self.user_id = user_id
+        self.script_id = script_id
+        self.variable_id = variable_id
+        self.amount = amount
+
+    def __repr__(self):
+        return 'USVC(%s, %s, %s, %d)' % (self.user_id, self.script_id,
+                self.variable_id, self.amount)

@@ -14,8 +14,8 @@ os.environ['MPLCONFIGDIR'] = '/tmp'
 from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
 
-from sql import User, Script, Variable, Commit, CommitVar, Base, \
-        Session
+from sql import User, Script, Variable, Commit, CommitVar, \
+        UserScriptCache, UserScriptVariableCache, Base, Session
 
 from webtool import WebTool, read_post_data
 
@@ -190,6 +190,11 @@ class SessionHackException(Exception):
     """
 
 class SessionHack(object):
+    """
+        The SessionHack middleware is used to catch any exceptions that occur;
+        this makes debugging easier. Typically debugging can be painful because
+        the trace and error is only shown in the web page.
+    """
 
     def __init__(self, app):
         self.app = app
@@ -206,19 +211,27 @@ class SessionHack(object):
         return ret
 
 class ScheduledJob(object):
+    """
+        Middleware for Scheduled Jobs. Rank updates, cache updates.
+    """
 
     def __init__(self, app):
         self.app = app
 
     def __call__(self, env, start_response):
         global last_rank_time
+        global last_cache_time
 
         if time.time() - last_rank_time > 3600: # One hour
             last_rank_time = time.time()
             update_user_ranking()
 
-        return self.app(env, start_response)
+        if time.time() - last_cache_time > 600: # 10 minutes
+            last_cache_time = time.time()
+            update_user_script_cache()
+            update_user_script_variable_cache()
 
+        return self.app(env, start_response)
 
 def loggedin(env):
     """
@@ -1280,6 +1293,47 @@ def update_user_ranking():
     del session
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user ranks...')
 
+def update_user_script_cache():
+    """
+    """
+    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user-script cache...')
+    session = Session()
+
+    update_query = str(session.query(User.id, Script.id, func.sum(Commit.timeadd)
+        ).outerjoin((Commit, Commit.user_id==User.id)).outerjoin(
+            (Script, Script.id == Commit.script_id)).group_by(
+            User.id, Script.id))
+
+    session.execute('TRUNCATE TABLE uscache') # CASCADE?
+    session.execute('INSERT INTO uscache %s' % update_query)
+    session.commit()
+
+    del session
+    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user-script cache...')
+
+def update_user_script_variable_cache():
+    """
+    """
+    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user-script-variable'
+        'cache...')
+    session = Session()
+
+    update_query = str(session.query(User.id, Script.id, Variable.id,
+        func.sum(CommitVar.amount)).outerjoin(
+            (Commit, Commit.user_id == User.id)).outerjoin(
+            (Script, Commit.script_id == Script.id)).outerjoin(
+            (CommitVar, CommitVar.commit_id == Commit.id)).outerjoin(
+            (Variable, Variable.id == CommitVar.variable_id)).group_by(
+            User.id, Script.id, Variable.id))
+
+    session.execute('TRUNCATE TABLE usvcache') # CASCADE?
+    session.execute('INSERT INTO usvcache %s' % update_query)
+    session.commit()
+
+    del session
+    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user-script-variable'
+        'cache...')
+
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
     jinjaenv.autoescape = True
@@ -1292,6 +1346,7 @@ if __name__ == '__main__':
 
     # Set it to zero so we schedule it right away. (the first time)
     last_rank_time = 0
+    last_cache_time = 0
 
     from log import PyLogger
 
