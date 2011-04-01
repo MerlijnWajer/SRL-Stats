@@ -205,8 +205,8 @@ class ScriptTool(StatsTool):
                 (Script, Commit.script_id == Script.id)).filter(
                 Script.id == sid).first()
 
-        restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1]) if time[1]
-                is not None else 0}
+        restime = {'commit_amount' : int(time[0] if time[0] is not None else 0)
+                ,'commit_time' : int(time[1]) if time[1] is not None else 0}
 
         return dict(zip(['script', 'vars', 'time'], [script, my_vars, restime]))
 
