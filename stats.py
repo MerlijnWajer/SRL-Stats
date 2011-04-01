@@ -419,7 +419,7 @@ def users(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('users.html')
-    top_users = ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
+    top_users = ut.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE, cache=True)
 
     return template_render(tmpl,
         {   'users' : top_users,
@@ -433,7 +433,8 @@ def scripts(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('scripts.html')
-    top_scripts = st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
+    top_scripts = st.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE,
+            cache=True)
 
     return template_render(tmpl,
         {   'scripts' : top_scripts,
@@ -461,7 +462,8 @@ def variables(env, pageid=None):
     pageid = get_pageid(pageid)
 
     tmpl = jinjaenv.get_template('variables.html')
-    top_variables = vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE)
+    top_variables = vt.top((pageid-1)*RESULTS_PER_PAGE, RESULTS_PER_PAGE,
+            cache=True)
 
     return template_render(tmpl,
         {   'variables' : top_variables,
