@@ -1301,7 +1301,7 @@ def update_user_script_cache():
 
     update_query = str(session.query(User.id, Script.id,
         func.sum(Commit.timeadd), func.count(Commit.id)
-        ).outerjoin((Commit, Commit.user_id==User.id)).outerjoin(
+        ).join((Commit, Commit.user_id==User.id)).join(
             (Script, Script.id == Commit.script_id)).group_by(
             User.id, Script.id))
 
@@ -1320,10 +1320,10 @@ def update_user_script_variable_cache():
     session = Session()
 
     update_query = str(session.query(User.id, Script.id, Variable.id,
-        func.sum(CommitVar.amount)).outerjoin(
-            (Commit, Commit.user_id == User.id)).outerjoin(
-            (Script, Commit.script_id == Script.id)).outerjoin(
-            (CommitVar, CommitVar.commit_id == Commit.id)).outerjoin(
+        func.sum(CommitVar.amount)).join(
+            (Commit, Commit.user_id == User.id)).join(
+            (Script, Commit.script_id == Script.id)).join(
+            (CommitVar, CommitVar.commit_id == Commit.id)).join(
             (Variable, Variable.id == CommitVar.variable_id)).group_by(
             User.id, Script.id, Variable.id))
 
