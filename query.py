@@ -71,7 +71,7 @@ class UserTool(StatsTool):
 
         return dict(zip(['user', 'time'], [user, restime]))
 
-    def info_script(self, uid, sid):
+    def info_script(self, uid, sid): # XXX: Needs cache
         """
             Returns the user object, script object, time statistics and
             variables commits by the user with their amount.
@@ -169,7 +169,7 @@ class ScriptTool(StatsTool):
 
         return obj.all()
 
-    def info(self, sid):
+    def info(self, sid, cache=False):
         """
             Return script information:
                 -   Script Object
@@ -181,14 +181,26 @@ class ScriptTool(StatsTool):
         if script is None:
             return None
 
-        vars = self.s.query(func.sum(CommitVar.amount), Variable).join(
+        if cache:
+            vars = self.s.query(func.sum(UserScriptVariableCache.amount),
+                Variable).join((Variable, UserScriptVariableCache.variable_id \
+                == Variable.id)).filter(UserScriptVariableCache.script_id \
+                == sid).group_by(Variable).all()
+                # Why do I need to group by all the Variable entities? XXX
+        else:
+            vars = self.s.query(func.sum(CommitVar.amount), Variable).join(
                 (Variable, CommitVar.variable_id==Variable.id)).join(
                 (Commit, Commit.id == CommitVar.commit_id)).filter(
                  Commit.script_id == sid).group_by(Variable).all()
 
         my_vars = [(int(x[0]), x[1]) for x in vars]
 
-        time = self.s.query(func.count(Commit.timeadd), 
+        if cache:
+            time = self.s.query(func.sum(UserScriptCache.commit_amount),
+                func.sum(UserScriptCache.time_sum)).filter(
+                UserScriptCache.script_id == sid).first()
+        else:
+            time = self.s.query(func.count(Commit.timeadd),
                 func.sum(Commit.timeadd)).join(
                 (Script, Commit.script_id == Script.id)).filter(
                 Script.id == sid).first()
@@ -302,7 +314,7 @@ class VariableTool(StatsTool):
 
         return obj.all()
 
-    def info(self, variableid):
+    def info(self, variableid, cache=False):
         """
             Return information about the variable: The total commit amount plus
             the Variable object.
@@ -312,7 +324,12 @@ class VariableTool(StatsTool):
         if variable is None:
             return None
 
-        amount = self.s.query(func.sum(CommitVar.amount)).filter(
+        if cache:
+            amount = self.s.query(func.sum(UserScriptVariableCache.amount)
+                ).filter(UserScriptVariableCache.variable_id == variableid
+                ).group_by(UserScriptVariableCache.variable_id).first()
+        else:
+            amount = self.s.query(func.sum(CommitVar.amount)).filter(
                     CommitVar.variable_id==variableid).first()
 
         return dict(zip(['variable', 'amount'], [variable, amount]))

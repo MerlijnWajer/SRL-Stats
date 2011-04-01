@@ -1,5 +1,6 @@
 TODO:
     -   Use commit date as index?
+    -   Refine robots.txt
 
     -   Delete / clean tools
     -   Fix unicode warnings.

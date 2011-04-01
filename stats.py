@@ -319,7 +319,7 @@ def script(env, scriptid=None):
         Script information page. See ``script.html'' for the template.
     """
     tmpl = jinjaenv.get_template('script.html')
-    sinfo = st.info(scriptid)
+    sinfo = st.info(scriptid, cache=True)
 
     if sinfo is None:
         return None
@@ -401,7 +401,7 @@ def variable(env, variableid=None):
         template.
     """
     tmpl = jinjaenv.get_template('variable.html')
-    _variable = vt.info(variableid)
+    _variable = vt.info(variableid, cache=True)
 
     if _variable is None:
         return None
@@ -1114,7 +1114,7 @@ def signature_api_script(env, scriptid):
     """
         Script Signature API.
     """
-    info = st.info(scriptid)
+    info = st.info(scriptid, cache=True)
 
     if info is None:
         return None
@@ -1143,7 +1143,7 @@ def signature_api_user(env, userid):
         User Signature API
     """
     # XXX: Also list variables for user
-    info = ut.info(userid)
+    info = ut.info(userid, cache=True)
 
     if info is None:
         return None
