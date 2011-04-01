@@ -1,4 +1,6 @@
 TODO:
+    -   Use commit date as index?
+
     -   Delete / clean tools
     -   Fix unicode warnings.
     -   Implement searches.
