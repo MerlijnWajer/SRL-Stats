@@ -85,7 +85,7 @@ wt.add_rule(re.compile('^%s/api/script/([0-9]{1,6})$' % BASE_URL),
 wt.add_rule(re.compile('^%s/api/user/([0-9]{1,6})$' % BASE_URL),
     signature_api_user, ['userid'])
 
-wt.add_rule(re.compile('^%s/api/commit/last$' % BASE_URL), 
+wt.add_rule(re.compile('^%s/api/commit/last$' % BASE_URL),
         signature_api_commit, [])
 
 # Manage rules
@@ -109,6 +109,7 @@ wt.add_rule(re.compile('^%s/graph/commits(?:/month/([0-9]{1,6}))?(?:/year/'\
         '?(?:/type/([A-z]+))?$' % BASE_URL),
         graph_commits, ['month', 'year', 'scriptid', 'userid', 'select_type' ])
 
+wt.add_rule(re.compile('^%s/robots.txt$' % BASE_URL), robots, [])
+
 # Default page
-wt.add_rule(re.compile('^%s/?$' % BASE_URL),
-            general, [])
+wt.add_rule(re.compile('^%s/?$' % BASE_URL), general, [])
