@@ -210,6 +210,9 @@ class SessionHack(object):
 
         return ret
 
+def robots():
+    return ['User-agent: *\nDisallow: /']
+
 class ScheduledJob(object):
     """
         Middleware for Scheduled Jobs. Rank updates, cache updates.
