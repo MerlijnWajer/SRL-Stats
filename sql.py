@@ -9,7 +9,8 @@ engine = create_engine("postgresql+psycopg2://%s:%s@%s:%s/%s" % (dbu, dbpwd,
 # Pass echo=True to see all SQL queries
 # When using MySQL; pass charset=utf8&use_unicode=1
 
-from classes import User, Script, Variable, Commit, CommitVar, Base
+from classes import User, Script, Variable, Commit, CommitVar, Base, \
+    UserScriptCache, UserScriptVariableCache
 
 Base.metadata.create_all(engine)
 metadata = Base.metadata

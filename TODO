@@ -1,4 +1,6 @@
 TODO:
+    -   Use commit date as index?
+
     -   Delete / clean tools
     -   Fix unicode warnings.
     -   Implement searches.
@@ -11,6 +13,12 @@ TODO:
     -   Images per variable?
 
     -   Add optionparser for logfiles, etc.
+
+    -   Weekly / Monthly report. (In pdf, txt)?
+    -   Time (gained) delta.
+    -   Script and user activity. Stats per week, etc.
+    -   ``Overview'' page. List top 50 users, scripts, variables. Also show time
+    delta here and on user page.
 
     -   Pages and graphs for Variables.
         -   Per users (pie)
