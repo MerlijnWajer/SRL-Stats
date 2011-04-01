@@ -149,19 +149,21 @@ class UserScriptCache(Base):
     user_id = Column(Integer, ForeignKey('users.id'),primary_key=True)
     script_id = Column(Integer, ForeignKey('scripts.id'),primary_key=True)
     time_sum = Column(Integer)
+    commit_amount = Column(Integer)
 
     user = relationship(User)
     script = relationship(Script)
 
 
-    def __init__(self, user_id, script_id, time_sum):
+    def __init__(self, user_id, script_id, time_sum, commit_amount):
         self.user_id = user_id
         self.script_id = script_id
         self.time_sum = time_sum
+        self.commit_amount = commit_amount
 
     def __repr__(self):
-        return 'USC(%s, %s, %d)' % (self.user_id, self.script_id,
-                self.time_sum)
+        return 'USC(%s, %s, %d, %d)' % (self.user_id, self.script_id,
+                self.time_sum, self.commit_amount)
 
 class UserScriptVariableCache(Base): # Differs from UserScriptCache
     """

@@ -83,10 +83,10 @@ def template_render(template, vars, default_page=True):
     #vars['uniencode'] = lambda x: x.encode('utf8')
 
     if default_page:
-        vars['topusers']    = ut.top(_limit=4)
-        vars['topscripts']  = st.top(_limit=4)
-        vars['lastcommits'] = ct.top(_limit=4)
-        vars['topvars']     = vt.top(_limit=4, only_vars=True)
+        vars['topusers']    = ut.top(_limit=5, cache=True)
+        vars['topscripts']  = st.top(_limit=5, cache=True)
+        vars['lastcommits'] = ct.top(_limit=5)
+        vars['topvars']     = vt.top(_limit=5, only_vars=True, cache=True)
 
     return unicode(template.render(vars)).encode('utf8')
 
@@ -280,7 +280,7 @@ def user(env, userid=None):
     """
     tmpl = jinjaenv.get_template('user.html')
     # Also list variables for user.
-    uinfo = ut.info(userid)
+    uinfo = ut.info(userid, cache=True)
 
     if uinfo is None:
         return None
@@ -1299,7 +1299,8 @@ def update_user_script_cache():
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user-script cache...')
     session = Session()
 
-    update_query = str(session.query(User.id, Script.id, func.sum(Commit.timeadd)
+    update_query = str(session.query(User.id, Script.id,
+        func.sum(Commit.timeadd), func.count(Commit.id)
         ).outerjoin((Commit, Commit.user_id==User.id)).outerjoin(
             (Script, Script.id == Commit.script_id)).group_by(
             User.id, Script.id))
