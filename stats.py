@@ -474,7 +474,7 @@ def user_script_stats(env, userid, scriptid):
     """
         Page with information for a script specific to a user.
     """
-    data = ut.info_script(userid, scriptid)
+    data = ut.info_script(userid, scriptid, cache=True)
     if data is None:
         return None
 
