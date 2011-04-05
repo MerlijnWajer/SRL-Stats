@@ -71,7 +71,7 @@ class UserTool(StatsTool):
 
         return dict(zip(['user', 'time'], [user, restime]))
 
-    def info_script(self, uid, sid): # XXX: Needs cache
+    def info_script(self, uid, sid, cache=False):
         """
             Returns the user object, script object, time statistics and
             variables commits by the user with their amount.
@@ -84,13 +84,26 @@ class UserTool(StatsTool):
         if script is None:
             return None
 
-        time = self.s.query(func.count(Commit.timeadd),
-                func.sum(Commit.timeadd)).filter(Commit.user_id == uid).filter(
-                        Commit.script_id == sid).first()
+        # XXX: Needs testing.
+        if cache:
+            time = self.s.query(func.count(Commit.timeadd),
+                func.sum(Commit.timeadd)).join(
+                (User, Commit.user_id == User.id)).filter(
+                User.id == uid).first()
+            vars = self.s.query(func.sum(UserScriptVariableCache.amount),
+                   Variable.name).join((Variable.id ==
+                   UserScriptVariableCache.variable_id).filter(
+                   UserScriptVariableCache.user_id == uid).filter(
+                   UserScriptVariableCache.script_id == sid).group_by(
+                   Variable.name).all()
+        else:
+            time = self.s.query(func.count(Commit.timeadd),
+               func.sum(Commit.timeadd)).filter(Commit.user_id == uid).filter(
+               Commit.script_id == sid).first()
 
-        vars = self.s.query(func.sum(CommitVar.amount), Variable.name).join(
-            (Variable, CommitVar.variable_id == Variable.id)).join(
-            (Commit, Commit.id == CommitVar.commit_id)).filter(Commit.user_id ==
+            vars = self.s.query(func.sum(CommitVar.amount), Variable.name).join(
+                (Variable, CommitVar.variable_id == Variable.id)).join(
+                (Commit, Commit.id == CommitVar.commit_id)).filter(Commit.user_id ==
                 uid).filter(Commit.script_id == sid).group_by(Variable.name).all()
 
         my_vars = [(int(x[0]), x[1]) for x in vars]
