@@ -291,6 +291,7 @@ def user(env, userid=None):
     return template_render(tmpl,
         {   'ttc' : uinfo['time']['commit_time'],
             'tc' : uinfo['time']['commit_amount'],
+            'vars' : uinfo['vars'],
             'user' : uinfo['user'], 'session' : env['beaker.session'] }
         )
 
@@ -469,6 +470,13 @@ def variables(env, pageid=None):
         {   'variables' : top_variables,
             'pageid' : pageid, 'session' : env['beaker.session']}
         )
+
+def graph_page(env):
+    # POST DATA CRAP XXX
+
+    tmpl = jinjaenv.get_template('graphs.html')
+
+    return template_render(tmpl,  {'session': env['beaker.session']})
 
 def user_script_stats(env, userid, scriptid):
     """

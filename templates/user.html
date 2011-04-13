@@ -24,8 +24,20 @@
     <p> {{ user.name }} does not own any scripts. </p>
     {% endif %}
 
+    {% if vars %}
+        <p> Variables for this user: <p/>
+        <ul>
+        {% for var in vars %}
+            <li>
+            <a href="{{baseurl}}/variable/{{ var[1].id }}">
+                {{ var[1].name }}</a> : {{ var[0] }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
     <p>
-    You can view all the commits of this user 
+    You can view all the commits of this user
         <a href="{{baseurl}}/user/{{user.id}}/commits">
             here
         </a>

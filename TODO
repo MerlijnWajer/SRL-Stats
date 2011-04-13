@@ -12,6 +12,7 @@ TODO:
 
     -   Implement favicon.ico / support for static files.
     -   Images per variable?
+    -   Page helper to view graps. Year X, Month Y, of commits. (By user, etc)
 
     -   Add optionparser for logfiles, etc.
 
