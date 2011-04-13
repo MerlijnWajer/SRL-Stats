@@ -61,7 +61,7 @@ class UserTool(StatsTool):
                 UserScriptCache.user_id == uid).group_by(UserScriptCache.user_id).first()
 
             vars = self.s.query(func.sum(UserScriptVariableCache.amount),
-                    Variable.name).join((Variable.id ==
+                    Variable.name).join((Variable, Variable.id ==
                     UserScriptVariableCache.variable_id)).filter(
                     UserScriptVariableCache.user_id == uid).group_by(
                     Variable.name).all()
