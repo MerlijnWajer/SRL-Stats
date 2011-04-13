@@ -50,6 +50,8 @@ from sqlalchemy import func
 from sqlalchemy import extract
 import sqlalchemy
 
+import traceback, sys
+
 # Log levels
 LVL_ALWAYS = 0          # Will always be shown.
 LVL_NOTABLE = 42        # Notable information.
@@ -204,6 +206,9 @@ class SessionHack(object):
             ret = self.app(env, start_response)
         except Exception, e:
             print 'Exception in SessionHack:', e.message
+            print '-' * 60
+            traceback.print_exc(file=sys.stdout)
+            print '-' * 60
             raise SessionHackException(e.message)
         finally:
             Session.rollback()
