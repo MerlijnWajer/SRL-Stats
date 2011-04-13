@@ -56,20 +56,31 @@ class UserTool(StatsTool):
             return None
 
         if cache:
-            res = self.s.query(func.sum(UserScriptCache.commit_amount),
+            time = self.s.query(func.sum(UserScriptCache.commit_amount),
                     func.sum(UserScriptCache.time_sum)).filter(
                 UserScriptCache.user_id == uid).group_by(UserScriptCache.user_id).first()
-            time = res
+
+            vars = self.s.query(func.sum(UserScriptVariableCache.amount),
+                    Variable.name).join((Variable.id ==
+                    UserScriptVariableCache.variable_id)).filter(
+                    UserScriptVariableCache.user_id == uid).group_by(
+                    Variable.name).all()
         else:
             time = self.s.query(func.count(Commit.timeadd),
                 func.sum(Commit.timeadd)).join(
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
 
-        restime = {'commit_amount' : int(time[0]) if time[0] is not None else 0,
-                   'commit_time' : int(time[1]) if time[1] is not None else 0}
+            vars = self.s.query(func.sum(CommitVar.amount), Variable.name).join(
+                    (Variable, CommitVar.variable_id == Variable.id)).join(
+                    (Commit, Commit.id == CommitVar.commit_id)).filter(
+                    Commit.user_id == uid).group_by(Variable.name).all()
 
-        return dict(zip(['user', 'time'], [user, restime]))
+        restime = {'commit_amount' : int(time[0]) if time[0] is not None else 0,
+                   'commit_time' : int(time[1]) if time[1] is not None else 0,
+                   }
+
+        return dict(zip(['user', 'time', 'vars'], [user, restime, vars]))
 
     def info_script(self, uid, sid, cache=False):
         """
@@ -92,7 +103,7 @@ class UserTool(StatsTool):
                 User.id == uid).first()
             vars = self.s.query(func.sum(UserScriptVariableCache.amount),
                    Variable.name).join((Variable.id ==
-                   UserScriptVariableCache.variable_id).filter(
+                   UserScriptVariableCache.variable_id)).filter(
                    UserScriptVariableCache.user_id == uid).filter(
                    UserScriptVariableCache.script_id == sid).group_by(
                    Variable.name).all()
