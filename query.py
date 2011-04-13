@@ -61,20 +61,20 @@ class UserTool(StatsTool):
                 UserScriptCache.user_id == uid).group_by(UserScriptCache.user_id).first()
 
             vars = self.s.query(func.sum(UserScriptVariableCache.amount),
-                    Variable.name).join((Variable, Variable.id ==
+                    Variable).join((Variable, Variable.id ==
                     UserScriptVariableCache.variable_id)).filter(
                     UserScriptVariableCache.user_id == uid).group_by(
-                    Variable.name).all()
+                    Variable).all()
         else:
             time = self.s.query(func.count(Commit.timeadd),
                 func.sum(Commit.timeadd)).join(
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
 
-            vars = self.s.query(func.sum(CommitVar.amount), Variable.name).join(
+            vars = self.s.query(func.sum(CommitVar.amount), Variable).join(
                     (Variable, CommitVar.variable_id == Variable.id)).join(
                     (Commit, Commit.id == CommitVar.commit_id)).filter(
-                    Commit.user_id == uid).group_by(Variable.name).all()
+                    Commit.user_id == uid).group_by(Variable).all()
 
         restime = {'commit_amount' : int(time[0]) if time[0] is not None else 0,
                    'commit_time' : int(time[1]) if time[1] is not None else 0,
