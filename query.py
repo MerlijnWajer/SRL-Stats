@@ -76,9 +76,10 @@ class UserTool(StatsTool):
                     (Commit, Commit.id == CommitVar.commit_id)).filter(
                     Commit.user_id == uid).group_by(Variable).all()
 
-        restime = {'commit_amount' : int(time[0]) if time[0] is not None else 0,
-                   'commit_time' : int(time[1]) if time[1] is not None else 0,
-                   }
+        restime = \
+            {'commit_amount' : 0, 'commit_time' : 0} if time is None else \
+            {'commit_amount' : int(time[0]) if time[0] is not None else 0,
+             'commit_time' : int(time[1]) if time[1] is not None else 0}
 
         return dict(zip(['user', 'time', 'vars'], [user, restime, vars]))
 
