@@ -103,7 +103,7 @@ class UserTool(StatsTool):
                 (User, Commit.user_id == User.id)).filter(
                 User.id == uid).first()
             vars = self.s.query(func.sum(UserScriptVariableCache.amount),
-                   Variable.name).join((Variable.id == \
+                   Variable.name).join((Variable, Variable.id == \
                    UserScriptVariableCache.variable_id)).filter(
                    UserScriptVariableCache.user_id == uid).filter(
                    UserScriptVariableCache.script_id == sid).group_by(
