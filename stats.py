@@ -412,6 +412,10 @@ def variable(env, variableid=None):
     if _variable is None:
         return None
 
+    # This should really be handled by jinja
+    if _variable['amount'] is None:
+        _variable['amount'] = (0,)
+
     return template_render(tmpl,
         {   'variable' : _variable['variable'], 'amount' :
             _variable['amount'][0],
