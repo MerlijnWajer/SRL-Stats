@@ -711,13 +711,11 @@ def api_commit(env):
                         % (env['REMOTE_ADDR'], pd))
             return '150'
 
-        if v < 1:
+        if v < 1 or v > 10000:
             log.log([], LVL_NOTABLE, PyLogger.WARNING,
                 'API_COMMIT: %s, %s DENIED: Invalid variable value (%d)' \
                         % (env['REMOTE_ADDR'], pd, v))
-            continue
-            # XXX: Add this eventually
-            # return '150'
+            return '150'
 
         vars[script_vars[x]] = v
 
