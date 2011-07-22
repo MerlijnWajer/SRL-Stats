@@ -8,6 +8,9 @@ import re
 # then we will get a database error. This ``fix'' works around it.
 # Until you get more than 999999 users.
 
+# Typically 10 digits would suffice, as we reach the max somewhere in the 11
+# digits.
+
 # User rules
 wt.add_rule(re.compile('^%s/user/([0-9]{1,8})$' % BASE_URL),
         user, ['userid'])
