@@ -1350,8 +1350,8 @@ def graph_commits_year_dyn(env, year=None,
 
     res = q.all()
 
-    amount = range(365)
-    for x in range(365):
+    amount = range(364)
+    for x in range(364):
         amount[x] = 0
 
     for x in res:
@@ -1365,7 +1365,7 @@ def graph_commits_year_dyn(env, year=None,
     if userid:
         title += ' by user: %s' % user['user'].name
 
-    s = gt.commit_bar(range(1,364), amount,
+    s = gt.commit_bar(range(1,365), amount,
             _title='Commits of year' + title,
             _xlabel='days', _ylabel='%s of commits' % select_type)
 
