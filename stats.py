@@ -1331,7 +1331,7 @@ def graph_commits_year_dyn(env, year=None,
 
     sel = {'amount' :
                 Session.query(extract('day', Commit.timestamp),
-                    func.count('*'), extract('month', Commit.timestamp),
+                    func.count('*'), extract('month', Commit.timestamp)),
             'minutes':
                 Session.query(extract('day', Commit.timestamp),
                     func.sum(Commit.timeadd), extract('month', Commit.timestamp))
