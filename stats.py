@@ -480,6 +480,7 @@ def variables(env, pageid=None):
             'pageid' : pageid, 'session' : env['beaker.session']}
         )
 
+# XXX: Not used
 def graph_page(env):
     # POST DATA CRAP XXX
 
@@ -1285,6 +1286,78 @@ def graph_commits_month_dyn(env, month=None, year=None,
 
     s = gt.commit_bar(range(1,33), amount,
             _title='Commits per month' + title,
+            _xlabel='days', _ylabel='%s of commits' % select_type)
+
+    return s
+
+def graph_commits_year_dyn(env, year=None,
+        scriptid=None, userid=None, select_type='amount'):
+    """
+        Generic function for month graphs.
+        If month is None, the current month is used.
+        If year is None, the current year is used.
+        Valid select types: 'amount', 'minutes'
+    """
+    if select_type not in ('amount', 'minutes'):
+        return None
+
+    if year is None:
+        year = datetime.datetime.now().year
+    else:
+        year = int(year)
+
+    if year < 1:
+        return None
+
+    if scriptid:
+        script = st.info(scriptid)
+        if script is None:
+            return None
+
+    if userid:
+        user = ut.info(userid)
+        if user is None:
+            return None
+
+    sel = {'amount' :
+                Session.query(extract('day', Commit.timestamp),
+                    func.count('*')),
+            'minutes':
+                Session.query(extract('day', Commit.timestamp),
+                    func.sum(Commit.timeadd))
+            }
+    if select_type not in sel:
+        return None
+
+    q = sel[select_type]
+
+    if userid:
+        q = q.filter(Commit.user_id==userid)
+    if scriptid:
+        q = q.filter(Commit.script_id==scriptid)
+
+    q = q.filter(extract('year', Commit.timestamp)==year)
+    q = q.group_by(extract('day', Commit.timestamp))
+
+    res = q.all()
+
+    amount = range(365)
+    for x in range(365):
+        amount[x] = 0
+
+    for x in res:
+        amount[int(x[0])] = x[1]
+
+    if scriptid:
+        title = ' to script: %s' % script['script'].name
+    else:
+        title = ''
+
+    if userid:
+        title += ' by user: %s' % user['user'].name
+
+    s = gt.commit_bar(range(1,365), amount,
+            _title='Commits of year' + title,
             _xlabel='days', _ylabel='%s of commits' % select_type)
 
     return s

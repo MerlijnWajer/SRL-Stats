@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy import create_engine
 
-try
+try:
     from stats_credentials import dbu, dbpwd, dwh, dbp, dbname
 except ImportError, e:
     print 'Cannot find stats_credentials!'
