@@ -1290,6 +1290,15 @@ def graph_commits_month_dyn(env, month=None, year=None,
 
     return s
 
+def graph_commits_year(env, year, scriptid, userid, select_type):
+    if select_type not in ('amount', 'minutes'):
+        select_type = 'amount'
+    s = graph_commits_year_dyn(env, year, scriptid, userid, select_type)
+    if s is None:
+        return None
+    else:
+        return ['graph', s]
+
 def graph_commits_year_dyn(env, year=None,
         scriptid=None, userid=None, select_type='amount'):
     """

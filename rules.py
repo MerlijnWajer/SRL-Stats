@@ -115,7 +115,7 @@ wt.add_rule(re.compile('^%s/graph/commits(?:/month/([0-9]{1,8}))?(?:/year/'\
 wt.add_rule(re.compile('^%s/graph/commits_year(?:/year/'\
         '([0-9]{1,8}))?(?:/script/([0-9]{1,8}))?(?:/user/([0-9]{1,8}))'\
         '?(?:/type/([A-z]+))?$' % BASE_URL),
-        graph_commits, ['month', 'year', 'scriptid', 'userid', 'select_type' ])
+        graph_commits_year, ['year', 'scriptid', 'userid', 'select_type' ])
 
 wt.add_rule(re.compile('^%s/robots.txt$' % BASE_URL), robots, [])
 
