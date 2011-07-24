@@ -1299,6 +1299,7 @@ def graph_commits_year(env, year, scriptid, userid, select_type):
     else:
         return ['graph', s]
 
+# XXX: This doesn't work yet...
 def graph_commits_year_dyn(env, year=None,
         scriptid=None, userid=None, select_type='amount'):
     """
@@ -1330,10 +1331,10 @@ def graph_commits_year_dyn(env, year=None,
 
     sel = {'amount' :
                 Session.query(extract('day', Commit.timestamp),
-                    func.count('*')),
+                    func.count('*'), extract('month', Commit.timestamp),
             'minutes':
                 Session.query(extract('day', Commit.timestamp),
-                    func.sum(Commit.timeadd))
+                    func.sum(Commit.timeadd), extract('month', Commit.timestamp))
             }
     if select_type not in sel:
         return None
@@ -1354,6 +1355,7 @@ def graph_commits_year_dyn(env, year=None,
     for x in range(364):
         amount[x] = 0
 
+    # XXX: Use the month here to determine the ``day of the year''.
     for x in res:
         amount[int(x[0])] = x[1]
 
