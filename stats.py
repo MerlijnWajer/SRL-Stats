@@ -1365,7 +1365,7 @@ def graph_commits_year_dyn(env, year=None,
     if userid:
         title += ' by user: %s' % user['user'].name
 
-    s = gt.commit_bar(range(1,365), amount,
+    s = gt.commit_bar(range(1,364), amount,
             _title='Commits of year' + title,
             _xlabel='days', _ylabel='%s of commits' % select_type)
 
