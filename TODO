@@ -3,6 +3,10 @@ TODO:
     -   Refine robots.txt
 
     -   Delete / clean tools
+
+    -   Allow owner to delete variables from his scripts:
+    http://villavu.com/forum/showthread.php?p=818794#post818794
+
     -   Fix unicode warnings.
     -   Implement searches.
     -   Implement IP ban system.
@@ -32,6 +36,15 @@ TODO:
     -   Pages and graphs for Users.
         -   Per script
         -   Per variable
+
+    -   Graphs:
+        -   Commits per hour (what hour is the most busy, etc)
+        -   Scatterplot with commits per hour (hits on minutes or seconds)
+            ( Also filter per user , per script, per variable? )
+        -   User time vs time? (How much minutes does he/she gain per actual
+            minutes)
+
+    -   Signature service.
 
 
 MAYBE:

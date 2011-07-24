@@ -1,7 +1,10 @@
 import sqlalchemy
 from sqlalchemy import create_engine
 
-from stats_credentials import dbu, dbpwd, dwh, dbp, dbname
+try:
+    from stats_credentials import dbu, dbpwd, dwh, dbp, dbname
+except ImportError, e:
+    print 'Cannot find stats_credentials!'
 
 engine = create_engine("postgresql+psycopg2://%s:%s@%s:%s/%s" % (dbu, dbpwd,
     dwh, dbp, dbname))
