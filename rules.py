@@ -88,6 +88,9 @@ wt.add_rule(re.compile('^%s/api/script/([0-9]{1,8})$' % BASE_URL),
 wt.add_rule(re.compile('^%s/api/user/([0-9]{1,8})$' % BASE_URL),
     signature_api_user, ['userid'])
 
+wt.add_rule(re.compile('^%s/api/user/([0-9]{1,8})/script/([0-9]{1,8})$' % BASE_URL),
+    signature_api_user_script, ['userid', 'scriptid'])
+
 wt.add_rule(re.compile('^%s/api/commit/last$' % BASE_URL),
         signature_api_commit, [])
 
