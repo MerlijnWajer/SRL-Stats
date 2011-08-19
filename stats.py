@@ -1207,14 +1207,11 @@ def signature_api_user_script(env, userid, scriptid):
     return ['text/plain', json.dumps({
             'user' : info['user'].name,
             'script' : info['script'].name,
-            'rank' : info['user'].rank,
             'vars' : var_list,
             'time' : info['time']['commit_time'],
             'commits' : info['time']['commit_amount'],
             'last_commit_on:' : last_commit.timestamp.ctime() if last_commit
                 else None,
-            'last_commit_to:' : last_commit.script.name if last_commit
-                else None
         }, indent=' ' * 4)]
 
 def signature_api_commit(env):
