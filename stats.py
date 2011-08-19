@@ -1169,7 +1169,7 @@ def signature_api_user(env, userid):
     var_list = []
     _vars = info['vars']
     for var in _vars:
-        var_list.append((var[1].name, var[0]))
+        var_list.append((var[1].name, int(var[0])))
 
     last_commit = ut.listc(info['user'], _limit=1)
 
