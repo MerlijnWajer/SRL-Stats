@@ -1137,21 +1137,15 @@ def signature_api_script(env, scriptid):
     if info is None:
         return None
 
-    var_list = []
-    _vars = info['vars']
-    for var in _vars:
-        var_list.append((var[1].name, int(var[0])))
-
     last_commit = st.listc(info['script'], _limit=1)
 
     if last_commit and len(last_commit):
         last_commit = last_commit[0]
 
-    info['vars'] = [(x[0], x[1].name) for x in info['vars']]
+    info['vars'] = [(int(x[0]), x[1].name) for x in info['vars']]
 
     return ['text/plain', json.dumps({
             'script' : info['script'].name,
-            'vars' : var_list,
             'owner' : info['script'].owner.name,
             'commits' : info['time']['commit_amount'],
             'time' : info['time']['commit_time'],
@@ -1175,7 +1169,7 @@ def signature_api_user(env, userid):
     var_list = []
     _vars = info['vars']
     for var in _vars:
-        var_list.append((var[1].name, int(var[0])))
+        var_list.append((int(var[0]), var[1].name))
 
     last_commit = ut.listc(info['user'], _limit=1)
 
