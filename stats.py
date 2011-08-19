@@ -1166,6 +1166,11 @@ def signature_api_user(env, userid):
     if info is None:
         return None
 
+    var_list = []
+    _vars = info['vars']
+    for var in _vars:
+        var_list.append((var[1].name, var[0]))
+
     last_commit = ut.listc(info['user'], _limit=1)
 
     if last_commit and len(last_commit):
@@ -1174,6 +1179,7 @@ def signature_api_user(env, userid):
     return ['text/plain', json.dumps({
             'user' : info['user'].name,
             'rank' : info['user'].rank,
+            'vars' : var_list,
             'time' : info['time']['commit_time'],
             'commits' : info['time']['commit_amount'],
             'last_commit_on:' : last_commit.timestamp.ctime() if last_commit
