@@ -100,10 +100,10 @@ class UserTool(StatsTool):
 
         # XXX: Needs testing.
         if cache:
-            time = self.s.query(func.count(Commit.timeadd),
-                func.sum(Commit.timeadd)).join(
-                (User, Commit.user_id == User.id)).filter(
-                User.id == uid).first()
+            time = self.s.query(UserScriptCache.commit_amount,
+                    UserScriptCache.time_sum).filter(User.id == uid).filter(
+                    Script.id == sid).first()
+
             vars = self.s.query(func.sum(UserScriptVariableCache.amount),
                    Variable.name).join((Variable, Variable.id == \
                    UserScriptVariableCache.variable_id)).filter(
