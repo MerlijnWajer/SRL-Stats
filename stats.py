@@ -1197,7 +1197,7 @@ def signature_api_user_script(env, userid, scriptid):
     if info is None:
         return None
 
-    var_list = [(x[0], x[1].name) for x in info['vars']]
+    var_list = [(x[0], x[1]) for x in info['vars']]
 
     last_commit = ut.listc(info['user'], _limit=1)
 
