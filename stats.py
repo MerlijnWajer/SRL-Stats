@@ -1140,7 +1140,7 @@ def signature_api_script(env, scriptid):
     var_list = []
     _vars = info['vars']
     for var in _vars:
-        var_list.append((var[1].name, var[0]))
+        var_list.append((var[1].name, int(var[0])))
 
     last_commit = st.listc(info['script'], _limit=1)
 
