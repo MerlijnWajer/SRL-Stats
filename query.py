@@ -83,7 +83,7 @@ class UserTool(StatsTool):
             {'commit_amount' : int(time[0]) if time[0] is not None else 0,
              'commit_time' : int(time[1]) if time[1] is not None else 0}
 
-        return dict(zip(['user', 'time', 'vars'], [user, restime, myvars]))
+        return dict(zip(['user', 'time', 'vars'], [user, restime, my_vars]))
 
     def info_script(self, uid, sid, cache=False):
         """
