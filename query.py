@@ -121,8 +121,8 @@ class UserTool(StatsTool):
 
         my_vars = [(int(x[0]), x[1]) for x in vars]
 
-        restime = {'commit_amount' : int(time[0]), 'commit_time' : int(time[1])
-                if time[1] is not None else 0}
+        restime = {'commit_amount' : int(time[0]) if time[0] is not None else 0,
+                'commit_time' : int(time[1]) if time[1] is not None else 0}
 
         return dict(zip(['user', 'script', 'vars', 'time'], [user, script, \
                 my_vars, restime]))
