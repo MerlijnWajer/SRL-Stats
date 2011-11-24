@@ -544,8 +544,8 @@ def login(env):
         data['pass'] = hashlib.sha256(data['pass']).hexdigest()
 
         # Does the user exist (and is the password valid)?
-        res =  Session.query(User).filter(User.name ==
-                data['user']).filter(User.password == data['pass']).first()
+        res =  Session.query(User).filter(func.lower(User.name) ==
+                data['user'].lower()).filter(User.password == data['pass']).first()
 
         if res:
             env['beaker.session']['loggedin'] = True
@@ -1096,8 +1096,8 @@ def register_user(env):
                     'error': 'Invalid Email.'}  )
 
         # Does the user exist?
-        res =  session.query(User).filter(User.name ==
-                data['user']).first()
+        res =  session.query(User).filter(func.lower(User.name) ==
+                data['user'].lower()).first()
 
         if res:
             return template_render(tmpl,
