@@ -5,6 +5,8 @@ try:
     from stats_credentials import dbu, dbpwd, dwh, dbp, dbname
 except ImportError, e:
     print 'Cannot find stats_credentials!'
+    import sys
+    sys.exit(1)
 
 engine = create_engine("postgresql+psycopg2://%s:%s@%s:%s/%s" % (dbu, dbpwd,
     dwh, dbp, dbname))
