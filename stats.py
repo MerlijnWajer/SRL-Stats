@@ -11,7 +11,6 @@ loaded.
 import os
 os.environ['MPLCONFIGDIR'] = '/tmp'
 
-from flup.server.fcgi import WSGIServer
 from jinja2 import Environment, PackageLoader
 
 from sql import User, Script, Variable, Commit, CommitVar, \
@@ -43,7 +42,7 @@ import simplejson as json
 
 # Import config
 from config import BASE_URL, RESULTS_PER_PAGE, \
-    session_options
+    USE_OWN_HTTPD, session_options
 
 # XXX: Perhaps move this to query. (Also move all commit extraction to query)
 from sqlalchemy import func
@@ -544,8 +543,8 @@ def login(env):
         data['pass'] = hashlib.sha256(data['pass']).hexdigest()
 
         # Does the user exist (and is the password valid)?
-        res =  Session.query(User).filter(User.name ==
-                data['user']).filter(User.password == data['pass']).first()
+        res =  Session.query(User).filter(func.lower(User.name) ==
+                data['user'].lower()).filter(User.password == data['pass']).first()
 
         if res:
             env['beaker.session']['loggedin'] = True
@@ -1096,8 +1095,8 @@ def register_user(env):
                     'error': 'Invalid Email.'}  )
 
         # Does the user exist?
-        res =  session.query(User).filter(User.name ==
-                data['user']).first()
+        res =  session.query(User).filter(func.lower(User.name) ==
+                data['user'].lower()).first()
 
         if res:
             return template_render(tmpl,
@@ -1502,7 +1501,19 @@ if __name__ == '__main__':
 
     usermatch = re.compile('^[0-9|A-Z|a-z]+$')
 
-    #WSGIServer(SessionMiddleware(stats,session_options)).run()
-    WSGIServer(SessionMiddleware(SessionHack(ScheduledJob(stats)), \
-            session_options)).run()
-    #WSGIServer(SessionMiddleware(stats, session_options), debug=False).run()
+    app = stats
+    app = ScheduledJob(app)
+    app = SessionHack(app)
+    app = SessionMiddleware(app, session_options)
+
+
+    if USE_OWN_HTTPD:
+        from wsgiref.simple_server import make_server, \
+                WSGIServer, WSGIRequestHandler
+        WSGIRequestHandler.log_message = lambda *x: None
+        httpd = make_server('', 8000, app, server_class=WSGIServer,
+                handler_class=WSGIRequestHandler)
+        httpd.serve_forever()
+    else:
+        from flup.server.fcgi import WSGIServer
+        WSGIServer(app).run()
