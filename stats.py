@@ -155,11 +155,11 @@ def stats(env, start_response):
         Main function. Handles all the requests.
     """
     log.log([], LVL_VERBOSE, PyLogger.INFO, 'Request for %s by %s' % \
-            (env['REQUEST_URI'], env['REMOTE_ADDR']))
+            (env['PATH_INFO'], env['REMOTE_ADDR']))
 
     # Search in the known ``rules'' (see rules.py) and call function if
     # existant.
-    r = wt.apply_rule(env['REQUEST_URI'], env)
+    r = wt.apply_rule(env['PATH_INFO'], env)
 
     # Result 'None' means 404.
     if r is None:
@@ -167,7 +167,7 @@ def stats(env, start_response):
         tmpl = jinjaenv.get_template('404.html')
 
         return template_render(tmpl, {
-            'url' : env['REQUEST_URI'], 'session' : env['beaker.session']},
+            'url' : env['PATH_INFO'], 'session' : env['beaker.session']},
             default_page=False)
 
     # XXX: Remove statement in favour of the next
