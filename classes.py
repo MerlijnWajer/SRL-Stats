@@ -4,7 +4,8 @@ from sqlalchemy import Table, Column, Integer, String, DateTime, func, \
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 
-Base = declarative_base()
+from database import Base
+
 metadata = Base.metadata
 
 script_variables = Table('script_variables', metadata,

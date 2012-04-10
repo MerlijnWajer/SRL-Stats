@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
-from sql import *
-from sqlalchemy import *
+from database import db_session
+from classes import User, Script, Variable, Commit
 
