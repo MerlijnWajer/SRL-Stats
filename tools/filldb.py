@@ -7,6 +7,8 @@ sys.path.append('..')
 
 from cli import *
 
+Session = db_session
+
 # directory of ukwords
 w = [x.replace('\n', '') for x in open('../ukwords_small')]
 
@@ -54,7 +56,8 @@ for i in range(100):
     u = User(w[i], unicode(hashlib.sha256(w[i]).hexdigest()))
     Session.add(u)
 
-ul = Session.query(User).all()
+Session.commit()
+ul = User.query.all()
 
 from random import randrange
 s1.owner = ul[randrange(0,99)]
