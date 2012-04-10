@@ -16,6 +16,21 @@ from database import db_session
 #       can handle.
 #   -   Make sure the pageid is not negative.
 #   -   Use WTForms for login/register forms.
+#   -   Graph support once again
+#   -   Make database cache incremental. (In query.CommitTool.add)
+#       I've taken initial steps. However, several things remain:
+#
+#           -   We need to calculate the initial cache. (Move this to an
+#               external script? Or at least a seperate file)
+#           -   We need to make sure it is serialised.
+#           -   We need to make sure the cache also generates entries for
+#               scripts that have no commits, or for scripts that do not (yet)
+#               own a specific variable. (Or we can create them when creating a
+#               variable / doing a first commit, might be easier and save table
+#               size)
+#           -   We need to actually test if this will completely fix the cache.
+#
+#   -   Add SimpleCache support (cache.get|set)
 #
 ###############################################################################
 
