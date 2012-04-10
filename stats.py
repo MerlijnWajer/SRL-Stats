@@ -22,7 +22,10 @@ from database import db_session
 #
 #           -   We need to calculate the initial cache. (Move this to an
 #               external script? Or at least a seperate file)
-#           -   We need to make sure it is serialised.
+#           -   We need to make sure it is serialised. (Use transactions)
+#                   c = db_session.connection() should do the trick.
+#                   With the connection object we can do stuff like c.begin(),
+#                   etc.
 #           -   We need to make sure the cache also generates entries for
 #               scripts that have no commits, or for scripts that do not (yet)
 #               own a specific variable. (Or we can create them when creating a
