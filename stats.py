@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-    render_template, flash, Response
+    render_template, flash, Response, jsonify
 
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from classes import User, Script, Commit, Variable, CommitVar, \
     UserScriptCache, UserScriptVariableCache
 
+from query import UserTool, ScriptTool, CommitTool, VariableTool
+
 from database import db_session
+
+import datetime, time
+import json
 
 ###############################################################################
 # TODO:
@@ -41,11 +46,14 @@ from database import db_session
 ###############################################################################
 # Configuration
 USE_OWN_HTTPD = True
+DEBUG = True
+RESULTS_PER_PAGE=15
 ###############################################################################
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_pyfile('stats-config.py')
+app.config.from_pyfile('config.py')
 
 db = SQLAlchemy(app)
 
@@ -65,31 +73,67 @@ def shutdown_session(exception=None):
     """
     db_session.remove()
 
+class StatsEncoder(json.JSONEncoder):
+    def default(self, o):
+        if type(o) in (User, Variable, Script):
+            return o.name
+        if type(o) in (Commit,):
+            return dict(id=o.id, user_id=o.user_id, script_id=o.script_id,
+            timeadd=o.timeadd,
+            timestamp=time.mktime(o.timestamp.timetuple()) * 1000,
+            commitvars=o.commitvars
+            )
+        if type(o) in (CommitVar,):
+            return dict(commit_id=o.commit_id, variable_id=o.variable_id,
+                    amount=o.amount)#, commit=o.commit, variable=o.variable)
+        return json.JSONEncoder.default(self, o)
+
+def s_jsonify(o):
+    return json.dumps(o, cls=StatsEncoder)
+
+def stats_render_template(template, **kw):
+    """
+        Template Render is a helper that initialises basic template variables
+        and handles unicode encoding.
+    """
+    kw['_import'] = {'datetime' : datetime}
+
+    return render_template(template, **kw)
+
 @app.route('/user/<int:userid>')
 def user(userid):
     """
     User-specific information.
     """
-    u = db_session.query(User).filter(User.id==userid).first()
-    print u
-    return str(u)
+    u = ut.info(userid, cache=True)
+
+    return s_jsonify(u)
+
+#    return stats_render_template('user.html',
+#        ttc=u['time']['commit_time'],
+#        tc=u['time']['commit_amount'],
+#        vars=u['vars'],
+#        user=u['user'],
+#        )
 
 @app.route('/user/all')
 @app.route('/user/all/<int:pageid>')
-def users(pageid=1):
+def users(pageid=0):
     """
     List of users.
     """
-    abort(403)
-
+    top_users = ut.top(pageid * RESULTS_PER_PAGE, RESULTS_PER_PAGE, cache=True)
+    return s_jsonify(top_users)
 
 @app.route('/user/<int:userid>/commits')
 @app.route('/user/<int:userid>/commits/<int:pageid>')
-def user_commits(userid, pageid=1):
+def user_commits(userid, pageid=0):
     """
     Users Commits.
     """
-    abort(403)
+    u = db_session.query(User).filter(User.id==userid).first()
+    uc = ut.listc(u, pageid * RESULTS_PER_PAGE, RESULTS_PER_PAGE)
+    return s_jsonify(uc)
 
 @app.route('/user/<int:userid>/script/<int:scriptid>')
 def user_scripts(userid, scriptid):
@@ -100,7 +144,7 @@ def user_scripts(userid, scriptid):
 
 @app.route('/user/<int:userid>/script/<int:scriptid>/commits')
 @app.route('/user/<int:userid>/script/<int:scriptid>/commits/<int:pageid>')
-def user_commits_script(userid, scriptid, pageid=1):
+def user_commits_script(userid, scriptid, pageid=0):
     """
     List of commits to a script by a specific user.
     """
@@ -116,7 +160,7 @@ def script(scriptid):
 
 @app.route('/script/all')
 @app.route('/script/all/<int:pageid>')
-def scripts(pageid=1):
+def scripts(pageid=0):
     """
     List of Scripts.
     """
@@ -124,7 +168,7 @@ def scripts(pageid=1):
 
 @app.route('/script/<int:scriptid>/commits')
 @app.route('/script/<int:scriptid>/commits')
-def script_commits(scriptid, pageid=1):
+def script_commits(scriptid, pageid=0):
     abort(403)
 
 @app.route('/commit/<int:commitid>')
@@ -132,6 +176,8 @@ def commit(commitid):
     """
     Commit-specific information.
     """
+    c = ct.info(commitid)
+    return s_jsonify(c)
     abort(403)
 
 @app.route('/commit/all')
@@ -151,7 +197,7 @@ def variable(variableid):
 
 @app.route('/variable/all')
 @app.route('/variable/all/<int:pageid>')
-def variables(pageid=1):
+def variables(pageid=0):
     abort(403)
 
 @app.route('/login')
@@ -185,6 +231,11 @@ class PrefixWith(object):
 
 
 if __name__ == '__main__':
+    ut = UserTool(db_session)
+    ct = CommitTool(db_session)
+    st = ScriptTool(db_session)
+    vt = VariableTool(db_session)
+
     if USE_OWN_HTTPD:
         app.run()
     else:
