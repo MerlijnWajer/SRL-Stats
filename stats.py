@@ -74,6 +74,12 @@ def shutdown_session(exception=None):
     db_session.remove()
 
 class StatsEncoder(json.JSONEncoder):
+    """
+    StatsEncoder is a helper for the jsonify functionality.
+    Basically, it makes sure no sensitive information is passed in the JSON and
+    also (with the help of JSONEncoder) makes sure circular references don't
+    happen).
+    """
     def default(self, o):
         if type(o) in (User, Variable, Script):
             return o.name
@@ -89,6 +95,9 @@ class StatsEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 def s_jsonify(o):
+    """
+    Uses StatsEncoder to turn an object into a json object.
+    """
     return json.dumps(o, cls=StatsEncoder)
 
 def stats_render_template(template, **kw):
