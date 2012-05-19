@@ -282,13 +282,32 @@ class CommitTool(StatsTool):
         c.user = user
         c.script = script
         c.timeadd = time
+
+        # Increase cache time for script 'script' by 'user' user by 'time'.
+        v = session.query(UserScriptCache).filter(UserScriptCache.user_id==user.id).filter(\
+            UserScriptCache.script_id==script.id).first()
+
+        v.time_sum += time
+
+        v.commit_amount += 1
+        session.add(v)
+
         cv = []
         for x, y in vars.iteritems():
             commitvar = CommitVar(y)
+
+            # Increase cache for this variable for script 'script' and user
+            # 'user' by 'y'.
+            v =\
+            session.query(UserScriptVariableCache).filter(UserScriptVariableCache.user_id==user.id\
+                ).filter(UserScriptVariableCache.script_id==script.id\
+                ).filter(UserScriptVariableCache.variable_id==x.id).first()
+            v.amount += y
+            session.add(v)
+
             commitvar.commit = c
             commitvar.variable = x
             cv.append(commitvar)
-
 
         for v in cv:
             session.add(v)

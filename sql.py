@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 try:
     from stats_credentials import dbu, dbpwd, dwh, dbp, dbname
 except ImportError, e:
-    print 'Cannot find stats_credentials!'
+    print 'Cannot find stats_credentials!', e
     import sys
     sys.exit(1)
 

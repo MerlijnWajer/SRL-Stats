@@ -51,6 +51,9 @@ import sqlalchemy
 
 import traceback, sys
 
+# For background cache updating.
+from multiprocessing import Process, Queue
+
 # Log levels
 LVL_ALWAYS = 0          # Will always be shown.
 LVL_NOTABLE = 42        # Notable information.
@@ -224,16 +227,27 @@ class ScheduledJob(object):
 
     def __call__(self, env, start_response):
         global last_rank_time
-        global last_cache_time
+        global last_rank_process
+        global last_rank_queue
 
-        if time.time() - last_rank_time > 3600: # One hour
-            last_rank_time = time.time()
-            update_user_ranking()
 
-        if time.time() - last_cache_time > 600: # 10 minutes
-            last_cache_time = time.time()
-            update_user_script_cache()
-            update_user_script_variable_cache()
+        if last_rank_process:
+            if last_rank_process.exitcode is not None:
+                last_rank_process.join()
+                last_rank_process = None
+                last_rank_queue = None
+                print 'Stopped running'
+            else:
+                print 'Still running'
+        else:
+            if time.time() - last_rank_time > 3600: # One hour
+                last_rank_time = time.time()
+                last_rank_queue = Queue()
+                last_rank_process = Process(target=update_user_ranking, args=(last_rank_queue,))
+                last_rank_process.start()
+                print 'Started a new process'
+
+        print 'Returning now'
 
         return self.app(env, start_response)
 
@@ -1404,16 +1418,31 @@ def graph_commits_year_dyn(env, year=None,
 
     return s
 
-
-def update_user_ranking():
+def update_user_ranking(q):
     """
         Update user rankings.
     """
+    # This code is now officially absolutely terrible XXX
 
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user ranks...')
-    session = Session()
 
-    users = ut.top(0, 0)
+    from sqlalchemy import create_engine as _create_engine
+    from stats_credentials import _dbu, _dbpwd, _dbh, _dbp, _dbname
+    _engine = create_engine("postgresql+psycopg2://%s:%s@%s:%s/%s" % (_dbu, _dbpwd,
+        _dbh, _dbp, _dbname))
+    del _dbu
+    del _dbpwd
+    del _dbh
+    del _dbp
+    del _dbname
+
+    from sqlalchemy.orm import sessionmaker as _sessionmaker
+    _Session = _sessionmaker(bind=_engine)
+    session = _Session()
+
+    _ut = UserTool(session)
+
+    users = _ut.top(0, 0)
 
     rank = 1
     for x in users:
@@ -1425,50 +1454,13 @@ def update_user_ranking():
 
     session.commit()
 
+    del _sessionmaker
+    del _create_engine
+    del _ut
     del session
+
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user ranks...')
-
-def update_user_script_cache():
-    """
-    """
-    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user-script cache...')
-    session = Session()
-
-    update_query = str(session.query(User.id, Script.id,
-        func.sum(Commit.timeadd), func.count(Commit.id)
-        ).join((Commit, Commit.user_id==User.id)).join(
-            (Script, Script.id == Commit.script_id)).group_by(
-            User.id, Script.id))
-
-    session.execute('TRUNCATE TABLE uscache') # CASCADE?
-    session.execute('INSERT INTO uscache %s' % update_query)
-    session.commit()
-
-    del session
-    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user-script cache...')
-
-def update_user_script_variable_cache():
-    """
-    """
-    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user-script-variable'
-        ' cache...')
-    session = Session()
-
-    update_query = str(session.query(User.id, Script.id, Variable.id,
-        func.sum(CommitVar.amount)).join(
-            (Commit, Commit.user_id == User.id)).join(
-            (Script, Commit.script_id == Script.id)).join(
-            (CommitVar, CommitVar.commit_id == Commit.id)).join(
-            (Variable, Variable.id == CommitVar.variable_id)).group_by(
-            User.id, Script.id, Variable.id))
-
-    session.execute('TRUNCATE TABLE usvcache') # CASCADE?
-    session.execute('INSERT INTO usvcache %s' % update_query)
-    session.commit()
-
-    del session
-    log.log([], LVL_ALWAYS, PyLogger.INFO, 'Done updating user-script-variable'
-        ' cache...')
+    q.put("Done updating user rank")
 
 if __name__ == '__main__':
     jinjaenv = Environment(loader=PackageLoader('stats', 'templates'))
@@ -1480,9 +1472,11 @@ if __name__ == '__main__':
     vt = VariableTool(Session)
     gt = GraphTool()
 
+
     # Set it to zero so we schedule it right away. (the first time)
     last_rank_time = 0
-    last_cache_time = 0
+    last_rank_process = None
+    last_rank_queue = None
 
     from log import PyLogger
 
