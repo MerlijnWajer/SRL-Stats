@@ -302,7 +302,10 @@ class CommitTool(StatsTool):
             session.query(UserScriptVariableCache).filter(UserScriptVariableCache.user_id==user.id\
                 ).filter(UserScriptVariableCache.script_id==script.id\
                 ).filter(UserScriptVariableCache.variable_id==x.id).first()
-            v.amount += y
+            if v is None:
+                v = UserScriptVariableCache(user.id, script.id, x.id, y)
+            else:
+                v.amount += y
             session.add(v)
 
             commitvar.commit = c
