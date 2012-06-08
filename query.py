@@ -3,6 +3,7 @@
     Script, Variable, Commit and CommitVar classes.
 """
 # Find exact depends?
+import sqlalchemy
 from sqlalchemy import *
 from classes import User, Script, Variable, Commit, CommitVar, \
     UserScriptCache, UserScriptVariableCache
@@ -287,9 +288,12 @@ class CommitTool(StatsTool):
         v = session.query(UserScriptCache).filter(UserScriptCache.user_id==user.id).filter(\
             UserScriptCache.script_id==script.id).first()
 
-        v.time_sum += time
+        if v is None:
+            v = UserScriptCache(user.id, script.id, time, 1)
+        else:
+            v.time_sum += time
+            v.commit_amount += 1
 
-        v.commit_amount += 1
         session.add(v)
 
         cv = []

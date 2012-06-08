@@ -1427,14 +1427,14 @@ def update_user_ranking(q):
     log.log([], LVL_ALWAYS, PyLogger.INFO, 'Updating user ranks...')
 
     from sqlalchemy import create_engine as _create_engine
-    from stats_credentials import _dbu, _dbpwd, _dbh, _dbp, _dbname
-    _engine = create_engine("postgresql+psycopg2://%s:%s@%s:%s/%s" % (_dbu, _dbpwd,
-        _dbh, _dbp, _dbname))
-    del _dbu
-    del _dbpwd
-    del _dbh
-    del _dbp
-    del _dbname
+    from stats_credentials import dbu, dbpwd, dwh, dbp, dbname
+    _engine = create_engine("postgresql+psycopg2://%s:%s@%s:%s/%s" % (dbu, dbpwd,
+        dwh, dbp, dbname))
+#    del dbu
+#    del dbpwd
+#    del dbh
+#    del dwp
+#    del dbname
 
     from sqlalchemy.orm import sessionmaker as _sessionmaker
     _Session = _sessionmaker(bind=_engine)
